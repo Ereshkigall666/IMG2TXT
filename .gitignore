@@ -1,1 +1,6 @@
 .ipynb_checkpoints/*
+OCR=kraken_dummy_corpus/*
+OCR=tesseract_dummy_corpus/*
+dummy_corpus/Suitte_et_troisieme_arrivee_du_covrier_path/*
+venv_kraken/*
+venv_tesseract/*

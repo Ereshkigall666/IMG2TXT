@@ -4,9 +4,9 @@
 # python3
 # virtualenv
 
-inType=$1 # -p (PDF) -j (JPG) -P (PNG) -t (TIF)
+inType=$1  # -p (PDF) -j (JPG) -P (PNG) -t (TIF)
 outType=$2 # -t (TXT) -h (HTML)
-engine=$3 # -k (KRAKEN), -t (TESSERACT)
+engine=$3  # -k (KRAKEN), -t (TESSERACT)
 dir_path=$4
 fileType="txt"
 # 1. Environnement virtuel
@@ -37,24 +37,24 @@ fi
 
 # 3. Segmentation des pages
 if [ $inType = "-p" ]; then
-	for file in `ls $dir_path*.pdf`; do pdftoppm -png $file $file; done
+	for file in $dir_path/*.pdf; do pdftoppm -png $file $file; done
 fi
 
 # 4. Binarisation des images pour Kraken
 if [ $engine = "-k" ]; then
-         timeout 600 kraken -i $dir_path $dir_path"_bin.png" binarize;
-	fi
+	timeout 600 kraken -i $dir_path $dir_path"_bin.png" binarize
+fi
 
 # 5. Segmentation et OCR
 if [ $engine = "-k" ]; then
-	if [ $outType = "-h" ];
-	then fileType="html";
+	if [ $outType = "-h" ]; then
+		fileType="html"
 	else
-	outType="";
+		outType=""
 	fi
 	timeout 600 kraken -i $dir_path $dir_path"."ùfileType segment ocr -m ./CORPUS17.mlmodel $ouType
 elif [ $engine = "-t" ]; then
 	# code pour lancer tesseract avec un fichier de config
 	# ici html ça sera un fichier alto
-	python3.7 tesseract_ocr.py $dir_path $outType;
+	python3.11 tesseract_ocr.py $dir_path $outType
 fi
