@@ -1,8 +1,11 @@
 .ipynb_checkpoints/*
+__pycache__/
+# random dirs
 OCR=kraken_dummy_corpus/*
 OCR=tesseract_dummy_corpus/*
 dummy_corpus/Suitte_et_troisieme_arrivee_du_covrier_path/*
 venv_kraken/*
 venv_tesseract/*
 dummy_corpus_res/*
+dummy_corpus_ocr/*
 todo.txt
