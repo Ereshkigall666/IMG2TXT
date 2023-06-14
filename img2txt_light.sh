@@ -52,7 +52,7 @@ if [ $engine = "-k" ]; then
 	else
 		outType=""
 	fi
-	timeout 600 kraken -i $dir_path $dir_path"."ùfileType segment ocr -m ./CORPUS17.mlmodel $ouType
+	timeout 600 kraken -i $dir_path $dir_path"."fileType segment ocr -m ./CORPUS17.mlmodel $ouType
 elif [ $engine = "-t" ]; then
 	# code pour lancer tesseract avec un fichier de config
 	# ici html ça sera un fichier alto
