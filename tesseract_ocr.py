@@ -7,7 +7,7 @@ if __name__ == '__main__':
 	if len(sys.argv) == 3:
 		img_path = sys.argv[1]
 		outType = sys.argv[2]
-		ext = '.txt' if outType == '-t' else '.alto'
+		ext = '.txt' if outType == 'txt' else '.alto'
 		img = cv2.imread(img_path)
 		
 		# preprocessings
