@@ -10,7 +10,8 @@ if __name__ == "__main__":
     parser.add_argument("-o_fmt", "--output_format", default="txt", help="the output format of the OCRised documents.", choices=OUTPUT_TYPE_LIST)
     parser.add_argument("-o", "--output_dir", help="the directory in which the output files should be put (if you want them to be put in a specific directory). Defaults to a <input_dir>_ocr directory.")
     parser.add_argument("-e", "--engine", default="t", help="the OCR engine to use.", choices=ENGINE_DICT.items())
+    parser.add_argument("-dpi", type=int, help="image quality to aim for.", default=200)
     args = parser.parse_args()
-    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir)
+    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi)
     #print(args)
     
