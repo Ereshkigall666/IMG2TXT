@@ -61,14 +61,14 @@ def set_up_venv(engine:str="t")->None:
             #venv.create(env_dir=venv_kraken_path, with_pip=True, symlinks=True, upgrade_deps=True)
             subprocess.run(args=["python", "-m", "virtualenv", "--python=python3.10", venv_kraken_path])
             #install kraken
-            venv_command_wrapper(command="pip3", arguments=["install","git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
+            venv_command_wrapper(command="pip", arguments=["install","git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
     else:     
         if not os.path.exists(venv_tesseract_path):
             print("Création de l'environement virtuel tesseract.")
             #venv.create(env_dir=venv_tesseract_path, with_pip=True, symlinks=True, upgrade_deps=True)
-            subprocess.run(args=["virtualenv", venv_tesseract_path])
+            subprocess.run(args=["python", "-m", "virtualenv", venv_tesseract_path])
             #install tesseract
-            venv_command_wrapper(command="pip3", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
+            venv_command_wrapper(command="pip", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
     return
 
 def ocrise_text(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path):
