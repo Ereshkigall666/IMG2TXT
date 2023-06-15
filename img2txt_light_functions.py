@@ -112,7 +112,7 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
     # actual script
     venv_path:str = venv_kraken_path if engine == "k" else venv_tesseract_path 
     set_up_venv(engine=engine)
-    #ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path)
+    ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path)
     return
 
 if __name__ == "__main__":
