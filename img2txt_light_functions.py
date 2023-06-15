@@ -82,8 +82,9 @@ def ocrise_text(input_dir_path:str, output_dir_path:str, output_type:str="alto",
         print(res_dir_path)
         # split file into image pages
         if filepath.endswith("pdf"):
+            poppler_path:str = r"C:\path\to\poppler-xx\bin" if sys.platform.startswith("win") else None
             print("splitting into images")
-            pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi)
+            pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_path)
         # Binarisation with kraken if kraken
         if engine == "k":
             for img_path in tqdm(glob.glob(pathname=f"{res_dir_path}/*.png")):
