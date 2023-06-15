@@ -33,12 +33,13 @@ def venv_command_wrapper(command:str, arguments:str|list[str], venv_path:str=ven
         arguments (str | list[str]): the arguments for the command
         venv_path (str, optional): the path to the /bin folder of the current venv. Defaults to venv_tesseract_path.
     """
+    bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if isinstance(arguments, list):
-        arguments.insert(0, os.path.join(venv_path, "bin", command))
+        arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
         res = subprocess.run(args=arguments, capture_output=True, text=True)
         
     else:
-        res = subprocess.run(args=[os.path.join(venv_path, "bin", command), arguments], capture_output=True, text=True)
+        res = subprocess.run(args=[os.path.join(venv_path, bin_dir_name, command), arguments], capture_output=True, text=True)
     return res
 
 
@@ -116,5 +117,5 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
 
 if __name__ == "__main__":
     #img_to_txt(input_dir_path=test_dir_path, output_dir_path=None, output_type="alto", engine="t")
-    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None, output_type="txt", engine="k")
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None, output_type="txt", engine="t")
     #print(venv_get_version_package(package="kraken", venv_path=venv_kraken_path))
