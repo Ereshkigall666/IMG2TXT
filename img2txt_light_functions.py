@@ -52,14 +52,14 @@ def venv_get_version_package(package:str, venv_path:str=venv_tesseract_path):
     cfg = package_config["default"]
     if "Version" in cfg:
         return cfg["Version"]
-    return res.stdout
+    return None
 
 def set_up_venv(engine:str="t")->None:
     if engine == "k":
         if not os.path.exists(venv_kraken_path):
             print("Création de l'environement virtuel kraken.")
             #venv.create(env_dir=venv_kraken_path, with_pip=True, symlinks=True, upgrade_deps=True)
-            subprocess.run(args=["virtualenv", "--python=python3.10", venv_kraken_path])
+            subprocess.run(args=["python", "-m", "virtualenv", "--python=python3.10", venv_kraken_path])
             #install kraken
             venv_command_wrapper(command="pip3", arguments=["install","git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
     else:     
@@ -97,6 +97,7 @@ def ocrise_text(input_dir_path:str, output_dir_path:str, output_type:str="alto",
     return
 
 def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200):
+    # preliminary steps
     if engine in ENGINE_DICT.values():
         for key in ENGINE_DICT:
             if ENGINE_DICT[key] == engine:
@@ -104,9 +105,13 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
                 break
     if output_dir_path is None:
         output_dir_path = os.path.join(os.path.dirname(input_dir_path), f"{Path(input_dir_path).stem}_ocr")
+    if sys.platform.startswith("win") and engine == "k":
+        print("Unfortunately, Windows is not supported on kraken. Defaulting to tesseract.")
+        engine = "t"
+    # actual script
     venv_path:str = venv_kraken_path if engine == "k" else venv_tesseract_path 
     set_up_venv(engine=engine)
-    ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path)
+    #ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path)
     return
 
 if __name__ == "__main__":
