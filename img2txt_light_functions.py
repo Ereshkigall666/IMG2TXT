@@ -5,17 +5,19 @@ import venv
 #import virtualenv
 import glob
 from tqdm.auto import tqdm
-#import tesseract
-#import kraken
 from pathlib import Path
+from typing import Final, Dict, List
 import pdf2image
 
-input_type_list:list = ["pdf","jpg", "png" "tif"]
-output_type_list:list = ["txt", "html"]
-engine_dict:dict={"k": "kraken", "t": "tesseract"}
+# global constants
+INPUT_TYPE_LIST:Final[List] = ["pdf","jpg", "png" "tif"]
+OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
+ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
+
+# convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
-test_dir_path:str = "dummy_corpus/*.pdf"
+test_dir_path:str = "dummy_corpus"
 output_dir_path:str = os.path.join(os.getcwd(), "dummy_corpus_res")
 corpus_model_path:str = "./CORPUS17.mlmodel"
 
@@ -55,12 +57,12 @@ def set_up_venv(engine:str="t")->None:
             venv_command_wrapper(command="pip3", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
     return
 
-def ocrise_text(input_dir_path:str, input_type: str, output_dir_path:str, output_type:str="alto", engine:str="t"):
+def ocrise_text(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t"):
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
         file_Path = Path(filepath)
         # create one subdirectory for each file
-        res_dir_path:str = os.path.join(output_dir_path, engine_dict[engine], file_Path.stem)
+        res_dir_path:str = os.path.join(output_dir_path, ENGINE_DICT[engine], file_Path.stem)
         os.makedirs(name=res_dir_path, exist_ok=True)
         #print(res_dir_path)
         # split file into image pages
@@ -77,11 +79,17 @@ def ocrise_text(input_dir_path:str, input_type: str, output_dir_path:str, output
                 venv_command_wrapper(command="python3", arguments=["tesseract_ocr.py", img_path, output_type])
     return
 
-def img_to_txt(input_dir_path:str, input_type:str, output_type:str="txt", engine:str="t", output_dir_path:str=""):
-    if output_dir_path == "":
+def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None):
+    if engine in ENGINE_DICT.values():
+        for key in ENGINE_DICT:
+            if ENGINE_DICT[key] == engine:
+                engine = key
+                break
+    if output_dir_path is None:
         output_dir_path = os.path.join(os.path.dirname(input_dir_path), f"{Path(input_dir_path).stem}_ocr")
     set_up_venv(engine=engine)
-    ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, input_type=input_type, output_type=output_type, engine=engine)
+    ocrise_text(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine)
     return
 
-#img_to_txt(input_dir_path=test_dir_path, output_dir_path="", input_type="pdf", output_type="alto", engine="t")
+if __name__ == "__main__":
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None, output_type="alto", engine="t")
