@@ -96,7 +96,7 @@ def ocrise_text(input_dir_path:str, output_dir_path:str, output_type:str="alto",
                 venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path+".txt", "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
         else:
             for img_path in glob.glob(pathname=f"{res_dir_path}/*.png"):
-                venv_command_wrapper(command="python3", arguments=["tesseract_ocr.py", img_path, output_type])
+                venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", img_path, output_type])
     return
 
 def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200):
