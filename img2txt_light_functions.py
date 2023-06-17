@@ -10,15 +10,17 @@ from tqdm.auto import tqdm
 from pathlib import Path
 from typing import Final, Dict, List
 import pdf2image
-import urllib3
+import requests
+import zipfile
 import configparser
+from io import BytesIO
 
 # global constants
 INPUT_TYPE_LIST:Final[List] = ["pdf","jpg", "png" "tif"]
 OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES:Final[Dict] = {"k": "kraken", "t": "pytesseract"}
-WIN_POPPLER_LINK:Final[str] = "https://github.com/oschwartz10612/poppler-windows/releases/download/v23.05.0-0/Release-23.05.0-0.zip"
+WIN_POPPLER_LINK:Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -63,6 +65,28 @@ def venv_get_version_package(package:str, venv_path:str=venv_tesseract_path):
         return cfg["Version"]
     return None
 
+def download_unzip_binary(binary_name:str, bin_link:str, venv_path:str = venv_tesseract_path, github_api:bool = True, force:bool = False)->str:
+    """Fetches compressed binaries and downloads them to <venv_path>/<other_bin>
+    Args:
+        binary_name (str): the name under which the binary will be downloaded. Can end up being either a file or a directory depending on what the specific binary is like.
+        bin_link (str, optional): the link to the binary to download.
+        venv_path (str, optional): [description]. Defaults to venv_tesseract_path. Path to the virtual environment currently used. 
+    """
+    bin_path:str =  os.path.join(venv_path, "other_bin", binary_name)
+    if os.path.exists(bin_path):
+        print("already installed")
+    else:
+        if github_api:
+            release_data = requests.get(bin_link).json()
+            bin_link = release_data["assets"][0]["browser_download_url"]
+            print(bin_link)
+        r = requests.get(bin_link)
+        with zipfile.ZipFile(file=BytesIO(r.content), mode="r") as zip_ref:
+            zip_ref.extractall(path=bin_path)
+    #print(glob.glob(os.path.join(bin_path, "**", "bin"), recursive=True))
+    return bin_path
+
+
 def set_up_venv(engine:str="t")->None:
     if engine == "k":
         if not os.path.exists(venv_kraken_path):
@@ -84,6 +108,7 @@ def set_up_venv(engine:str="t")->None:
             print("done.")
     return
 
+
 def kraken_binarise_image_file(img_path:str):
         print(img_path)
         print("Binarisation...")
@@ -104,11 +129,6 @@ def kraken_binarise_image_dir(dir_path:str, multiprocess:bool = True):
     else:
         for img_path in tqdm(file_list):
                 kraken_binarise_image_file(img_path=img_path)
-                print("Binarisation...")
-                venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path, "binarize"],venv_path=venv_kraken_path)
-            # Segmentation and ocr
-                print("Segmentation...")
-                venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path+".txt", "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
     return
 
 def tessaract_ocrise_file(filepath:str, output_type:str):
@@ -135,10 +155,14 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
     print(res_dir_path)
     # split file into image pages
     if filepath.endswith("pdf"):
-        # TODO: add list of poppler paths for Windows
-        poppler_path = None if sys.platform.startswith("win") else None
+        poppler_bin_path = None
+        # install poppler in the virtual environment on windows
+        if sys.platform.startswith("win"):
+            poppler_path = download_unzip_binary(binary_name="poppler", bin_link=WIN_POPPLER_LINK, venv_path=venv_path)
+            # retrieve the poppler-xx/bin path
+            poppler_bin_path = glob.glob(os.path.join(poppler_path, "**", "bin"), recursive=True)[0]
         print("splitting into images")
-        pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_path)
+        pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_bin_path) #type: ignore
     # Binarisation with kraken if kraken
     if engine == "k":
         kraken_binarise_image_dir(dir_path=res_dir_path, multiprocess=multiprocess)
@@ -150,7 +174,6 @@ def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", 
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
         ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess)
-        
     return
 
 def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200, multiprocess:bool = True):
@@ -166,15 +189,12 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
         print("Unfortunately, Windows is not supported on kraken. Defaulting to tesseract.")
         engine = "t"
     # actual script
+    #set up virtual environment
     venv_path:str = venv_kraken_path if engine == "k" else venv_tesseract_path 
     set_up_venv(engine=engine)
     ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess)
     return
 
-def windows_install_binary(dest_path:str, binary_file_name:str, bin_link:str="", venv_path:str = venv_tesseract_path):
-
-    
-    return
 
 # TESTS
 
@@ -187,7 +207,7 @@ def run_benchmark(input_dir_path:str, benchmark_dir_path:str = benchmark_dir_pat
     else:
         bench_file = open(file=bench_filepath, mode="a")
     time = timeit.timeit(stmt=f"img_to_txt(input_dir_path='{input_dir_path}', output_type='{output_type}', engine='{engine}', dpi={dpi}, multiprocess={multiprocess})", setup="from __main__ import img_to_txt", number=number_it)
-    bench_file.write(f"{time},{multiprocess},{output_type},{dpi},{len(os.listdir(path=input_dir_path))},{number_it}\n")  
+    bench_file.write(f"{time/number_it},{multiprocess},{output_type},{dpi},{len(os.listdir(path=input_dir_path))},{number_it}\n")  
     bench_file.close()
     return
 
@@ -198,6 +218,10 @@ if __name__ == "__main__":
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
     #set_up_venv(engine="k")
-    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=True, dpi=200, number_it=2)
-    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=False, dpi=200, number_it=2)
+    #print("----------------------MULTIPROCESS----------------------")
+    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=True, dpi=200, number_it=4)
+    #print("----------------------NO MULTIPROCESS----------------------")
+    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=False, dpi=200, number_it=4)
+    #other tests
+    #download_unzip_binary(binary_name="poppler", bin_link=WIN_POPPLER_LINK, venv_path=venv_tesseract_path)
     #print(venv_get_version_package(package="kraken", venv_path=venv_kraken_path))
