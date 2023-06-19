@@ -21,6 +21,7 @@ OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES:Final[Dict] = {"k": "kraken", "t": "pytesseract"}
 WIN_POPPLER_LINK:Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
+PY_VERSION_LIST:Final[List] = [10, 9, 8]
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -92,7 +93,14 @@ def set_up_venv(engine:str="t")->None:
         if not os.path.exists(venv_kraken_path):
             print("Création de l'environement virtuel kraken.")
             #venv.create(env_dir=venv_kraken_path, with_pip=True, symlinks=True, upgrade_deps=True)
-            subprocess.run(args=["python", "-m", "virtualenv", "--python=python3.10", venv_kraken_path])
+            # try to create venv with any of the supported python versions if they're present on the system
+            for version_num in PY_VERSION_LIST:
+                sub_process=subprocess.run(args=["python", "-m", "virtualenv", f"--python=python3.{version_num}", venv_kraken_path])
+                if sub_process.returncode == 0:
+                    break
+            else:
+                print("it seems that there is no supported version of python installed on this computer. Please install python3.10.")
+                return
             #install kraken
             print("installing kraken...")
             venv_command_wrapper(command="pip", arguments=["install", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
@@ -109,26 +117,28 @@ def set_up_venv(engine:str="t")->None:
     return
 
 
-def kraken_binarise_image_file(img_path:str):
+def kraken_binarise_image_file(img_path:str, output_type:str="txt"):
         print(img_path)
         print("Binarisation...")
         venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path, "binarize"],venv_path=venv_kraken_path)
         # Segmentation and ocr
         print(img_path)
+        out_img_path:str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
         print("Segmentation...")
-        venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path+".txt", "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+        venv_command_wrapper(command="kraken", arguments=["-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
         return
 
-def kraken_binarise_image_dir(dir_path:str, multiprocess:bool = True):
+def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True):
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     if multiprocess:
+        file_list = [(filepath, output_type) for filepath in file_list]
         pool = Pool(processes=len(file_list))
-        pool.map(func=kraken_binarise_image_file, iterable=tqdm(file_list))
+        pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
         pool.close()
         
     else:
         for img_path in tqdm(file_list):
-                kraken_binarise_image_file(img_path=img_path)
+                kraken_binarise_image_file(img_path=img_path, output_type=output_type)
     return
 
 def tessaract_ocrise_file(filepath:str, output_type:str):
@@ -136,13 +146,14 @@ def tessaract_ocrise_file(filepath:str, output_type:str):
     return
 
 def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True):
+    file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     if multiprocess:
-        file_list:list = [(filepath, output_type) for filepath in glob.glob(pathname=f"{dir_path}/*.png")]
+        file_list = [(filepath, output_type) for filepath in glob.glob(pathname=f"{dir_path}/*.png")]
         pool = Pool(processes=len(file_list))
         pool.starmap(tessaract_ocrise_file, file_list)
         pool.close()
     else:
-        for img_path in glob.glob(pathname=f"{dir_path}/*.png"):
+        for img_path in file_list:
             venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", img_path, output_type])
     return
 
@@ -165,7 +176,7 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
         pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_bin_path) #type: ignore
     # Binarisation with kraken if kraken
     if engine == "k":
-        kraken_binarise_image_dir(dir_path=res_dir_path, multiprocess=multiprocess)
+        kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess)
     else:
         tessaract_ocrise_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess)
     return
@@ -217,11 +228,11 @@ if __name__ == "__main__":
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
-    #set_up_venv(engine="k")
+    set_up_venv(engine="k")
     #print("----------------------MULTIPROCESS----------------------")
-    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=True, dpi=200, number_it=4)
+    #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="html", multiprocess=True, dpi=200, number_it=1)
     #print("----------------------NO MULTIPROCESS----------------------")
-    run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="txt", multiprocess=False, dpi=200, number_it=4)
+    #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="k", output_type="html", multiprocess=False, dpi=200, number_it=1)
     #other tests
     #download_unzip_binary(binary_name="poppler", bin_link=WIN_POPPLER_LINK, venv_path=venv_tesseract_path)
     #print(venv_get_version_package(package="kraken", venv_path=venv_kraken_path))
