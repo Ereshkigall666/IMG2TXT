@@ -12,7 +12,8 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--engine", default="t", help="the OCR engine to use.", choices=ENGINE_DICT.items())
     parser.add_argument("-dpi", type=int, help="image quality to aim for.", default=200)
     parser.add_argument("-m", "--multiprocess", help="whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly", default=True, type=bool)
+    parser.add_argument("-nc", "--nb_core", help="number of cores to use if multiprocessing is used.", default=3, type=int)
     args = parser.parse_args()
-    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess)
+    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess, nb_core=args.nb_core)
     #print(args)
     

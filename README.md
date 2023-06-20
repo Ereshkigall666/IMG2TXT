@@ -1,56 +1,69 @@
 # IMG2TXT
 
-A short shell script and Python wrapper to process OCR for XVIIth century french textual data using kraken and compare with Tesseract. 
+A simple command line utility to OCRise 17th century French corpora using the Kraken or Tesseract OCR engine. It works on MacOS, Linux, and Windows (it *probably* works on BSD too but was not tested on any BSD system except of course MacOS as previously mentioned).
 
-## Model
+## Model   
+
 We use the OCR model published by: Simon Gabay, Thibault Clérice, Christian Reul. OCR17: Ground Truth and Models for 17th c. French Prints (and hopefully more). 2020. ⟨hal-02577236⟩
 It is available at: https://github.com/e-ditiones/OCR17
 
-## Needed 
-- python3
-- virtualenv
-- pdftoppm library
-- PyPDF2
+## Requirements
 
-You can install all at once using the install.sh script :
+- Python >= 3.8 and < 3.11 (if you want to use the Kraken engine: Python3.11 is supported with Tesseract)
 
-chmod +x install.sh
+- pdf2image==1.16.3
+- PyPDF2==3.0.1
+- requests==2.28.2
+- tqdm==4.64.1
+- virtualenv==20.23.0
 
-./install.sh
+You can install them all at once (provided you already have a compatible python version installed!) by copy-pasting the following command in a terminal (assuming you cloned the repo to ~/IMG2TXT):
 
-## How to use (new version)?
-Usage: launch_pipeline_multiple_cores.py [options]
+```bash
+cd IMG2TXT
+pip install -r requirements.txt
+```
 
-### Options:
-- ```-c```  --corpus_path=    Dossier comprenant les fichiers à océriser [pdf, jpg..] default: dummy_data/
-- ```-o``` --out_html        passer le format de sortie en html (default: txt)
-- ```-k``` --kraken          Océriser avec Kraken (default : Tesseract)
-- ```-F``` --Force           Ré-océriser ce qui a déjà été fait
+## How to use it
 
-## How to use (old version)?
+### Short description  
 
-Launch the script launch_pipeline_multiple_cores_old.py with the following arguments :
+usage: img2txt_light.py [-h] [-o_fmt {txt,html,alto}] [-o OUTPUT_DIR]
+                        [-e {('k', 'kraken'),('t', 'tesseract')}] [-dpi DPI]
+                        [-m MULTIPROCESS] [-nc NB_CORE]
+                        corpus_path
 
-### Argument 1
-- ```-p```: PDFs in ```./data/```
-- ```-P```: PNGs in ```./data/```
-- ```-j```: JPGs in ```./data/```
-- ```-t```: TIFFs in ```./data/```
+### Options
 
-### Argument 2
-- ```-t```: TXT format as output
-- ```-h```: HTML format as output
+positional arguments:
+  corpus_path           path to the corpus you want to OCRise.
 
-### Argument 3
-- ```-k```: Kraken
-- ```-t```: Tesseract
+options:
+  -h, --help            show this help message and exit
+  -o_fmt {txt,html,alto}, --output_format {txt,html,alto}
+                        the output format of the OCRised documents. (default:
+                        txt)
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        the directory in which the output files should be put
+                        (if you want them to be put in a specific directory).
+                        Defaults to a <input_dir>_ocr directory. (default:
+                        None)
+  -e {('k', 'kraken'),('t', 'tesseract')}, --engine {('k', 'kraken'),('t', 'tesseract')}
+                        the OCR engine to use. (default: t)
+  -dpi DPI              image quality to aim for. (default: 200)
+  -m MULTIPROCESS, --multiprocess MULTIPROCESS
+                        whether to multiprocess or not. Multiprocessing is
+                        highly recommended as it speeds up the OCRisation
+                        process significantly (default: True)
+  -nc NB_CORE, --nb_core NB_CORE
+                        number of cores to use if multiprocessing is used.
+                        (default: 3)
 
-### Argument 4
-Paths to the directories where images are stored.
-Ex.: ```./data/*/jpg/``` the ```*``` means all the directories in ./data/ that has got a jpg/ directory in it.
+### Examples   
 
+- `python3 img2txt_light.py my_data`: OCRise all the documents in the my_data directory, using default settings (i.e tesseract engine, with multiprocessing, and with txt as the output type)
+- `python3 img2txt_light.py my_data -o_fmt html -e kraken`: OCRise all the documents in the my_data directory, using the Kraken engine and outputting the processed files as html files
 
+## Limitations   
 
-### Examples
-- ```python3 launch_pipeline_multiple_cores_old.py -p -t -k ./data/*/pdf/ ```: OCR is processed with Kraken on PDF documents stored in ```./data/*/pdf/``` directories and the output is in TXT format
-- ```python3 launch_pipeline_multiple_cores_old.py -j -h -t ./data/*/jpg/```: OCR is processed with Tesseract on JPG documents stored in ```./data/*/jpg/``` directories and the output is in HTML format
+Unfortunately, Kraken is not available to Windows users because the Kraken OCR engine itself doesn't support Windows.

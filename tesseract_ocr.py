@@ -16,7 +16,7 @@ if __name__ == '__main__':
 		img_Path = Path(img_path)
 		output_path:str = f"{os.path.join(img_Path.parent, img_Path.stem)}.{output_type}"
 		#print(output_path)
-		if output_type == '.txt':
+		if output_type == 'txt':
 			(output_file := io.open(file=output_path, mode='w')).write(txt := pytesseract.image_to_string(img))
 		else: # alto
 			(output_file := io.open(file=output_path, mode='wb')).write(alto:= pytesseract.image_to_alto_xml(img)) #type: ignore
