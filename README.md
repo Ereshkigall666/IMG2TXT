@@ -33,31 +33,19 @@ usage: img2txt_light.py [-h] [-o_fmt {txt,html,alto}] [-o OUTPUT_DIR]
                         [-m MULTIPROCESS] [-nc NB_CORE]
                         corpus_path
 
-### Options
+### Positional arguments
 
-positional arguments:
-  corpus_path           path to the corpus you want to OCRise.
+- corpus_path           path to the corpus you want to OCRise.
 
-options:
-  -h, --help            show this help message and exit
-  -o_fmt {txt,html,alto}, --output_format {txt,html,alto}
-                        the output format of the OCRised documents. (default:
-                        txt)
-  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
-                        the directory in which the output files should be put
-                        (if you want them to be put in a specific directory).
-                        Defaults to a <input_dir>_ocr directory. (default:
-                        None)
-  -e {('k', 'kraken'),('t', 'tesseract')}, --engine {('k', 'kraken'),('t', 'tesseract')}
-                        the OCR engine to use. (default: t)
-  -dpi DPI              image quality to aim for. (default: 200)
-  -m MULTIPROCESS, --multiprocess MULTIPROCESS
-                        whether to multiprocess or not. Multiprocessing is
-                        highly recommended as it speeds up the OCRisation
-                        process significantly (default: True)
-  -nc NB_CORE, --nb_core NB_CORE
-                        number of cores to use if multiprocessing is used.
-                        (default: 3)
+### options  
+
+- \-h, \-\-help: show this help message and exit    
+- \-o_fmt {txt,html,alto}, \-\-output_format {txt,html,alto}: the output format of the OCRised documents. (default:txt)    
+-  \-o OUTPUT_DIR, \-\-output_dir OUTPUT_DIR: the directory in which the output files should be put (if you want them to be put in a specific directory).Defaults to a <input_dir>_ocr directory. (default:: None)    
+-  \-e {('k', 'kraken'),('t', 'tesseract')}, \-\-engine {('k', 'kraken'),('t', 'tesseract')}:the OCR engine to use. (default: t)    
+-  \-dpi DPI: image quality to aim for. (default: 200)   
+-  \-m MULTIPROCESS, \-\-multiprocess MULTIPROCESS: whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly. (default: True)    
+-  \-nc NB_CORE, \-\-nb_core NB_CORE: number of cores to use if multiprocessing is used. (default: 3)
 
 ### Examples   
 
