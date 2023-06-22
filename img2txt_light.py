@@ -13,7 +13,8 @@ if __name__ == "__main__":
     parser.add_argument("-dpi", type=int, help="image quality to aim for.", default=200)
     parser.add_argument("-m", "--multiprocess", help="whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly", default=True, type=bool)
     parser.add_argument("-nc", "--nb_core", help="number of cores to use if multiprocessing is used.", default=3, type=int)
+    parser.add_argument("-f", "--force", help="whether to force-OCRise files that are determined to have already been processed.", action="store_true")
     args = parser.parse_args()
-    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess, nb_core=args.nb_core)
+    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess, nb_core=args.nb_core, force=args.force)
     #print(args)
     

@@ -45,7 +45,8 @@ usage: img2txt_light.py [-h] [-o_fmt {txt,html,alto}] [-o OUTPUT_DIR]
 -  \-e {('k', 'kraken'),('t', 'tesseract')}, \-\-engine {('k', 'kraken'),('t', 'tesseract')}:the OCR engine to use. (default: t)    
 -  \-dpi DPI: image quality to aim for. (default: 200)   
 -  \-m MULTIPROCESS, \-\-multiprocess MULTIPROCESS: whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly. (default: True)    
--  \-nc NB_CORE, \-\-nb_core NB_CORE: number of cores to use if multiprocessing is used. (default: 3)
+-  \-nc NB_CORE, \-\-nb_core NB_CORE: number of cores to use if multiprocessing is used. (default: 3)    
+-   \-f, \-\-force, whether to force-OCRise files that are determined to have already been processed. (default: False)
 
 ### Examples   
 

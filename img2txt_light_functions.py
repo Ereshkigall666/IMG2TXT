@@ -4,6 +4,7 @@ import sys
 #import venv
 #import virtualenv
 import glob
+import tempfile
 import timeit
 from multiprocessing import *
 from tqdm.auto import tqdm
@@ -118,54 +119,59 @@ def set_up_venv(engine:str="t")->None:
     return
 
 
-def kraken_binarise_image_file(img_path:str, output_type:str="txt"):
+def kraken_binarise_image_file(img_path:str, output_type:str="txt", force:bool = False):
         print(img_path)
+        out_img_path:str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
+        if os.path.exists(out_img_path) and not force:
+            print("this file has already been processed before.")
+            return
         print("Binarisation...")
         venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path, "binarize"],venv_path=venv_kraken_path)
         # Segmentation and ocr
         print(img_path)
-        out_img_path:str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
         print("Segmentation...")
         venv_command_wrapper(command="kraken", arguments=["-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
         return
 
-def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True, nb_core:int = 3):
+def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True, nb_core:int = 3, force:bool = False):
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
             file_list.extend(glob.glob(pathname=f"{dir_path}/*.{ext}"))
     if multiprocess:
-        file_list = [(filepath, output_type) for filepath in file_list]
+        file_list = [(filepath, output_type, force) for filepath in file_list]
         pool = Pool(processes=nb_core)
         pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
         pool.close()
         
     else:
         for img_path in tqdm(file_list):
-                kraken_binarise_image_file(img_path=img_path, output_type=output_type)
+                kraken_binarise_image_file(img_path=img_path, output_type=output_type, force=force)
     return
 
-def tessaract_ocrise_file(filepath:str, output_type:str):
-    venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type])
+def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False):
+    print("OCRisation with Tesseract...")
+    res = venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type, str(force)])
+    print(res)
     return
 
-def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3):
+def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False):
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
             file_list.extend(glob.glob(pathname=f"{dir_path}/*.{ext}"))
     if multiprocess:
-        file_list = [(filepath, output_type) for filepath in file_list]
+        file_list = [(filepath, output_type, force) for filepath in file_list]
         pool = Pool(processes=nb_core)
         pool.starmap(tessaract_ocrise_file, file_list)
         pool.close()
     else:
         for img_path in file_list:
-            venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", img_path, output_type])
+            tessaract_ocrise_file(filepath=img_path, output_type=output_type, force=force)
     return
 
 
-def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess: bool = True, nb_core:int = 3):
+def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess: bool = True, nb_core:int = 3, force: bool=False):
     file_Path = Path(filepath)
     # create one subdirectory for each file
     res_dir_path:str = os.path.join(output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", file_Path.stem)
@@ -186,18 +192,18 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
         
     # Binarisation with kraken if kraken
     if engine == "k":
-        kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess, nb_core=nb_core)
+        kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess, nb_core=nb_core, force=force)
     else:
-        tessaract_ocrise_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess, nb_core=nb_core)
+        tessaract_ocrise_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess, nb_core=nb_core, force=force)
     return
 
-def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess:bool = True, nb_core:int = 3):
+def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess:bool = True, nb_core:int = 3, force:bool = False):
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
-        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3)
+        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force)
     return
 
-def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3):
+def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False):
     # preliminary steps
     if engine in ENGINE_DICT.values():
         for key in ENGINE_DICT:
@@ -213,7 +219,7 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
     #set up virtual environment
     venv_path:str = venv_kraken_path if engine == "k" else venv_tesseract_path 
     set_up_venv(engine=engine)
-    ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core)
+    ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force)
     return
 
 
