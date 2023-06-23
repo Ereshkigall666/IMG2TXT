@@ -203,7 +203,7 @@ def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", 
         ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force)
     return
 
-def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False):
+def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:Union[str, None]=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False):
     # preliminary steps
     if engine.lower() in ENGINE_DICT.values():
         for key in ENGINE_DICT:
