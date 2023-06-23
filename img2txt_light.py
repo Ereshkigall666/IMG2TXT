@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser.add_argument("corpus_path", help="path to the corpus you want to OCRise.")
     parser.add_argument("-o_fmt", "--output_format", default="txt", help="the output format of the OCRised documents.", choices=OUTPUT_TYPE_LIST)
     parser.add_argument("-o", "--output_dir", help="the directory in which the output files should be put (if you want them to be put in a specific directory). Defaults to a <input_dir>_ocr directory.")
-    parser.add_argument("-e", "--engine", default="t", help="the OCR engine to use.", choices=ENGINE_DICT.items())
+    parser.add_argument("-e", "--engine", default="t", help="the OCR engine to use.", choices=[engine for iterable in [ENGINE_DICT.keys(), ENGINE_DICT.values()] for engine in iterable])
     parser.add_argument("-dpi", type=int, help="image quality to aim for.", default=200)
     parser.add_argument("-m", "--multiprocess", help="whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly", default=True, type=bool)
     parser.add_argument("-nc", "--nb_core", help="number of cores to use if multiprocessing is used.", default=3, type=int)

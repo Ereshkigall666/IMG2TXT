@@ -9,7 +9,7 @@ import timeit
 from multiprocessing import *
 from tqdm.auto import tqdm
 from pathlib import Path
-from typing import Final, Dict, List
+from typing import Final, Dict, List, Union
 from shutil import copy
 import pdf2image
 import requests
@@ -38,7 +38,7 @@ benchmark_dir_path:str = os.path.join(os.getcwd(), "benchmarks")
 def glob_path_dir(dir_path:str):
     return glob.glob(os.path.join(dir_path, "**", "*"), recursive=True)
 
-def venv_command_wrapper(command:str, arguments:str|list[str], venv_path:str=venv_tesseract_path):
+def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path:str=venv_tesseract_path):
     """wrapper to run python subprocesses using the virtual environment.
     Example: "pip3 install pytesseract opencv-python" -----> venv_command_wrapper(command="pip3", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
     Args:
@@ -149,13 +149,13 @@ def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:
                 kraken_binarise_image_file(img_path=img_path, output_type=output_type, force=force)
     return
 
-def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False):
+def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lang:str="fra"):
     print("OCRisation with Tesseract...")
-    res = venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type, str(force)])
+    res = venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type, str(force), lang])
     print(res)
     return
 
-def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False):
+def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra"):
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
@@ -205,7 +205,7 @@ def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", 
 
 def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:str|None=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False):
     # preliminary steps
-    if engine in ENGINE_DICT.values():
+    if engine.lower() in ENGINE_DICT.values():
         for key in ENGINE_DICT:
             if ENGINE_DICT[key] == engine:
                 engine = key

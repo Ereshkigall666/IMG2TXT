@@ -6,10 +6,11 @@ import pytesseract
 import cv2 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 5:
         img_path:str = sys.argv[1]
         output_type:str = sys.argv[2]
         force:bool = sys.argv[3] == "True"
+        lang:str = sys.argv[4]
         print(force)
         img_Path = Path(img_path)
         output_path:str = f"{os.path.join(img_Path.parent, img_Path.stem)}.{output_type}"
@@ -23,9 +24,9 @@ if __name__ == '__main__':
         # ocr
         #print(output_path)
         if output_type == 'txt':
-            (output_file := io.open(file=output_path, mode='w')).write(txt := pytesseract.image_to_string(img))
+            (output_file := io.open(file=output_path, mode='w')).write(txt := pytesseract.image_to_string(img, lang=lang))
         else: # alto
-            (output_file := io.open(file=output_path, mode='wb')).write(alto:= pytesseract.image_to_alto_xml(img)) #type: ignore
+            (output_file := io.open(file=output_path, mode='wb')).write(alto:= pytesseract.image_to_alto_xml(img, lang=lang)) #type: ignore
         print("done.")
         output_file.close()
         sys.exit()
