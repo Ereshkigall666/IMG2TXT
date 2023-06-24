@@ -24,6 +24,9 @@ ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES:Final[Dict] = {"k": "kraken", "t": "pytesseract"}
 WIN_POPPLER_LINK:Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
 PY_VERSION_LIST:Final[List] = [10, 9, 8]
+WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
+TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
+WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -81,8 +84,12 @@ def download_unzip_binary(binary_name:str, bin_link:str, venv_path:str = venv_te
     else:
         if github_api:
             release_data = requests.get(bin_link).json()
-            bin_link = release_data["assets"][0]["browser_download_url"]
-            print(bin_link)
+            if bin_link == WIN_POPPLER_LINK:
+                bin_link = release_data["assets"][0]["browser_download_url"]
+                print(bin_link)
+            elif bin_link == WIN_TESSERACT_LINK:
+                bin_link = release_data["zipball_url"]
+                
         r = requests.get(bin_link)
         with zipfile.ZipFile(file=BytesIO(r.content), mode="r") as zip_ref:
             zip_ref.extractall(path=bin_path)
@@ -113,10 +120,27 @@ def set_up_venv(engine:str="t")->None:
             #venv.create(env_dir=venv_tesseract_path, with_pip=True, symlinks=True, upgrade_deps=True)
             subprocess.run(args=["python", "-m", "virtualenv", venv_tesseract_path])
             #install tesseract
-            print("installing tesseract...")
-            venv_command_wrapper(command="pip", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
+            print("installing pytesseract...")
+            res = venv_command_wrapper(command="pip", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
+            print(res.stdout)
             print("done.")
     return
+
+def find_tesseract_path()->str:
+    tesseract_path:str = ""
+    if not sys.platform.startswith("win"):
+        which_out:str = subprocess.run(args=["which", "tesseract"], capture_output=True, text=True).stdout.strip()
+        tesseract_path = os.path.realpath(which_out)
+        print(tesseract_path)
+        if not os.path.exists(tesseract_path):
+            print(f"it looks like tesseract is not installed on this system.Please install it at: {TESSERACT_INSTALL_LINK}. If it is installed, it may simply not be in your PATH.")
+            sys.exit()
+    else:
+        tesseract_path = WIN_TESSERACT_EXE_PATH
+        if not os.path.exists(tesseract_path):
+            print(f"it looks like tesseract is not installed on this system. Please install it at: {TESSERACT_INSTALL_LINK}.  If it is installed, it may simply not be in your PATH.")
+            sys.exit()
+    return tesseract_path
 
 
 def kraken_binarise_image_file(img_path:str, output_type:str="txt", force:bool = False):
@@ -149,29 +173,35 @@ def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:
                 kraken_binarise_image_file(img_path=img_path, output_type=output_type, force=force)
     return
 
-def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lang:str="fra"):
+def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lang:str="fra", tesseract_path=None):
+    if tesseract_path is None:
+        tesseract_path = find_tesseract_path()
     print("OCRisation with Tesseract...")
-    res = venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type, str(force), lang])
-    print(res)
+    res = venv_command_wrapper(command="python", arguments=["tesseract_ocr.py", filepath, output_type, str(force), lang, tesseract_path])
+    print(res.stdout)
+    if res.stderr != "":
+        print(f"-------------ERROR-------------\n{res.stderr}")
     return
 
-def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra"):
+def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra", tesseract_path=None):
+    if tesseract_path is None:
+        tesseract_path = find_tesseract_path()
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
             file_list.extend(glob.glob(pathname=f"{dir_path}/*.{ext}"))
     if multiprocess:
-        file_list = [(filepath, output_type, force) for filepath in file_list]
+        file_list = [(filepath, output_type, force, lang, tesseract_path) for filepath in file_list]
         pool = Pool(processes=nb_core)
         pool.starmap(tessaract_ocrise_file, file_list)
         pool.close()
     else:
         for img_path in file_list:
-            tessaract_ocrise_file(filepath=img_path, output_type=output_type, force=force)
+            tessaract_ocrise_file(filepath=img_path, output_type=output_type, force=force, tesseract_path=tesseract_path)
     return
 
 
-def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess: bool = True, nb_core:int = 3, force: bool=False):
+def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess: bool = True, nb_core:int = 3, force: bool=False, tesseract_path=None):
     file_Path = Path(filepath)
     # create one subdirectory for each file
     res_dir_path:str = os.path.join(output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", file_Path.stem)
@@ -197,13 +227,13 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
         tessaract_ocrise_dir(dir_path=res_dir_path, output_type=output_type, multiprocess=multiprocess, nb_core=nb_core, force=force)
     return
 
-def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess:bool = True, nb_core:int = 3, force:bool = False):
+def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess:bool = True, nb_core:int = 3, force:bool = False, tesseract_path=None):
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
-        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force)
+        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force, tesseract_path=tesseract_path)
     return
 
-def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:Union[str, None]=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False):
+def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:Union[str, None]=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False, tesseract_path=None):
     # preliminary steps
     if engine.lower() in ENGINE_DICT.values():
         for key in ENGINE_DICT:
@@ -219,7 +249,7 @@ def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output
     #set up virtual environment
     venv_path:str = venv_kraken_path if engine == "k" else venv_tesseract_path 
     set_up_venv(engine=engine)
-    ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force)
+    ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path)
     return
 
 
@@ -247,7 +277,7 @@ if __name__ == "__main__":
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
-    set_up_venv(engine="k")
+    set_up_venv(engine="t")
     #print("----------------------MULTIPROCESS----------------------")
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="html", multiprocess=True, dpi=200, number_it=1, nb_core=3)
     #print("----------------------NO MULTIPROCESS----------------------")

@@ -9,7 +9,10 @@ It is available at: https://github.com/e-ditiones/OCR17
 
 ## Requirements
 
-- Python >= 3.8 and < 3.11 (if you want to use the Kraken engine: Python3.11 is supported with Tesseract)
+- Python >= 3.8 and < 3.11 (if you want to use the Kraken engine: Python3.11 is supported with Tesseract)    
+- Tesseract (for the tesseract engine)   
+
+### Python dependencies   
 
 - pdf2image==1.16.3
 - PyPDF2==3.0.1
@@ -17,7 +20,7 @@ It is available at: https://github.com/e-ditiones/OCR17
 - tqdm==4.64.1
 - virtualenv==20.23.0
 
-You can install them all at once (provided you already have a compatible python version installed!) by copy-pasting the following command in a terminal (assuming you cloned the repo to ~/IMG2TXT):
+You can install the latter all at once (provided you already have a compatible python version installed!) by copy-pasting the following command in a terminal (assuming you cloned the repo to ~/IMG2TXT):
 
 ```bash
 cd IMG2TXT

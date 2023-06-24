@@ -5,13 +5,16 @@ import os
 import pytesseract
 import cv2 
 
+
+
 if __name__ == '__main__':
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 6:
         img_path:str = sys.argv[1]
         output_type:str = sys.argv[2]
         force:bool = sys.argv[3] == "True"
         lang:str = sys.argv[4]
-        print(force)
+        tesseract_path:str = sys.argv[5]
+        pytesseract.pytesseract.tesseract_cmd=tesseract_path
         img_Path = Path(img_path)
         output_path:str = f"{os.path.join(img_Path.parent, img_Path.stem)}.{output_type}"
         # check if file has already been processed
