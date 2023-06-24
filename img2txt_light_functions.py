@@ -129,12 +129,14 @@ def set_up_venv(engine:str="t")->None:
 def find_tesseract_path()->str:
     tesseract_path:str = ""
     if not sys.platform.startswith("win"):
-        which_out:str = subprocess.run(args=["which", "tesseract"], capture_output=True, text=True).stdout.strip()
-        tesseract_path = os.path.realpath(which_out)
-        print(tesseract_path)
-        if not os.path.exists(tesseract_path):
+        res = subprocess.run(args=["which", "tesseract"], capture_output=True, text=True)
+        which_out:str = res.stdout.strip()
+        if not os.path.exists(os.path.realpath(which_out)) or res.returncode != 0:
             print(f"it looks like tesseract is not installed on this system.Please install it at: {TESSERACT_INSTALL_LINK}. If it is installed, it may simply not be in your PATH.")
             sys.exit()
+        else:
+            tesseract_path = os.path.realpath(which_out)
+
     else:
         tesseract_path = WIN_TESSERACT_EXE_PATH
         if not os.path.exists(tesseract_path):
@@ -186,6 +188,7 @@ def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lan
 def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra", tesseract_path=None):
     if tesseract_path is None:
         tesseract_path = find_tesseract_path()
+        print(tesseract_path)
     file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":

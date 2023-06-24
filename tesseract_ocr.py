@@ -15,6 +15,7 @@ if __name__ == '__main__':
         lang:str = sys.argv[4]
         tesseract_path:str = sys.argv[5]
         pytesseract.pytesseract.tesseract_cmd=tesseract_path
+        #print(tesseract_path)
         img_Path = Path(img_path)
         output_path:str = f"{os.path.join(img_Path.parent, img_Path.stem)}.{output_type}"
         # check if file has already been processed

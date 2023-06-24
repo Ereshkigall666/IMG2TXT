@@ -14,8 +14,8 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--multiprocess", help="whether to multiprocess or not. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly", default=True, type=bool)
     parser.add_argument("-nc", "--nb_core", help="number of cores to use if multiprocessing is used.", default=3, type=int)
     parser.add_argument("-f", "--force", help="whether to force-OCRise files that are determined to have already been processed.", action="store_true")
-    parser.add_argument("-t_path", "--tesseract_path", help="link to the tesseract binary path (useful if it is installed in an unusual location and not in your PATH).", default=None)
+    parser.add_argument("-t_path", "--tesseract_path", help="link to the tesseract binary path (useful if it is installed in an unusual location and not in your PATH).", default=None, type=str)
     args = parser.parse_args()
-    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess, nb_core=args.nb_core, force=args.force, tesseract_path=args.t_path)
+    img_to_txt(input_dir_path=args.corpus_path,output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir, dpi=args.dpi, multiprocess=args.multiprocess, nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path)
     #print(args)
     
