@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Final, Dict, List, Union
 from shutil import copy
 import pdf2image
+from PIL import Image
 import requests
 import zipfile
 import configparser
@@ -160,10 +161,10 @@ def kraken_binarise_image_file(img_path:str, output_type:str="txt", force:bool =
         return
 
 def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True, nb_core:int = 3, force:bool = False):
-    file_list:list = glob.glob(pathname=f"{dir_path}/*.png")
+    file_list:list = glob.glob(pathname=os.path.join(dir_path, "**", "*.png"), recursive=True)
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
-            file_list.extend(glob.glob(pathname=f"{dir_path}/*.{ext}"))
+            file_list.extend(glob.glob(pathname=os.path.join(dir_path, "**", ext), recursive=True))
     if multiprocess:
         file_list = [(filepath, output_type, force) for filepath in file_list]
         pool = Pool(processes=nb_core)
@@ -221,7 +222,8 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
         print("splitting into images")
         pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png", output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_bin_path) #type: ignore
     else:
-        copy(src=filepath, dst=os.path.join(res_dir_path, os.path.basename(filepath)))
+        (Image.open(filepath)).save(os.path.join(res_dir_path, f"{file_Path.stem}.png"))
+        #copy(src=filepath, dst=os.path.join(res_dir_path, os.path.basename(filepath)))
         
     # Binarisation with kraken if kraken
     if engine == "k":
@@ -280,7 +282,7 @@ if __name__ == "__main__":
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
-    set_up_venv(engine="t")
+    #set_up_venv(engine="t")
     #print("----------------------MULTIPROCESS----------------------")
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="html", multiprocess=True, dpi=200, number_it=1, nb_core=3)
     #print("----------------------NO MULTIPROCESS----------------------")
@@ -288,3 +290,4 @@ if __name__ == "__main__":
     #other tests
     #download_unzip_binary(binary_name="poppler", bin_link=WIN_POPPLER_LINK, venv_path=venv_tesseract_path)
     #print(venv_get_version_package(package="kraken", venv_path=venv_kraken_path))
+    ocrise_file(filepath="../../Antonomaz/Glane5_process/Glane5-sample/BM01481_MAZ.jpg", output_dir_path="../../Antonomaz/Glane5_process/Glane5-sample_ocr/", engine="k", output_type="txt", venv_path=venv_kraken_path, force=True)
