@@ -24,7 +24,8 @@ OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES:Final[Dict] = {"k": "kraken", "t": "pytesseract"}
 WIN_POPPLER_LINK:Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
-PY_VERSION_LIST:Final[List] = [10, 9, 8]
+#PY_VERSION_LIST:Final[List] = [10, 9, 8]
+PY_VERSION_LIST:list = [9]
 WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
 TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
@@ -236,6 +237,10 @@ def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", 
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
         ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force, tesseract_path=tesseract_path)
+        # remove pngs
+        png_file_list:list = glob.glob(os.path.join(output_dir_path, "**", "*.png"), recursive=True)
+        for png_file in png_file_list:
+            os.remove(png_file)
     return
 
 def img_to_txt(input_dir_path:str, output_type:str="txt", engine:str="t", output_dir_path:Union[str, None]=None, dpi:int =200, multiprocess:bool = True, nb_core:int = 3, force: bool = False, tesseract_path=None):
