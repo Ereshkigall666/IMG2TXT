@@ -15,6 +15,7 @@ import pdf2image
 from PIL import Image
 import requests
 import zipfile
+from git import Repo
 import configparser
 from io import BytesIO
 
@@ -123,7 +124,10 @@ def set_up_venv(engine:str="t")->None:
             print("installing kraken...")
             res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
             print(res.stdout)
-            print(res.stderr)
+            if res.returncode != 0:
+                print("it seems the installation failed.")
+                print(res.stderr)
+                exit()
             print("done.")
     else:     
         if not os.path.exists(venv_tesseract_path):
