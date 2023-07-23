@@ -105,9 +105,11 @@ def download_unzip_binary(binary_name:str, bin_link:str, venv_path:str = venv_te
 
 
 def set_up_venv(engine:str="t")->None:
+    cache_dir_path:str = ""
     if engine == "k":
         if not os.path.exists(venv_kraken_path):
             print("Création de l'environement virtuel kraken.")
+            cache_dir_path = os.path.join(venv_kraken_path, "tmp")
             #venv.create(env_dir=venv_kraken_path, with_pip=True, symlinks=True, upgrade_deps=True)
             # try to create venv with any of the supported python versions if they're present on the system
             for version_num in PY_VERSION_LIST:
@@ -119,18 +121,19 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
-            res = venv_command_wrapper(command="pip", arguments=["install", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
             print(res.stdout)
             print(res.stderr)
             print("done.")
     else:     
         if not os.path.exists(venv_tesseract_path):
             print("Création de l'environement virtuel tesseract.")
+            cache_dir_path = os.path.join(venv_tesseract_path, "tmp")
             #venv.create(env_dir=venv_tesseract_path, with_pip=True, symlinks=True, upgrade_deps=True)
             subprocess.run(args=["python", "-m", "virtualenv", venv_tesseract_path])
             #install tesseract
             print("installing pytesseract...")
-            res = venv_command_wrapper(command="pip", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
             print(res.stdout)
             print("done.")
     return
