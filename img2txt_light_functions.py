@@ -47,12 +47,14 @@ def glob_path_dir(dir_path:str):
     return glob.glob(os.path.join(dir_path, "**", "*"), recursive=True)
 
 def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path:str=venv_tesseract_path):
-    """wrapper to run python subprocesses using the virtual environment.
+    """_wrapper to run python subprocesses using the virtual environment.
     Example: "pip3 install pytesseract opencv-python" -----> venv_command_wrapper(command="pip3", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
     Args:
         command (str):command name
         arguments (str | list[str]): the arguments for the command
         venv_path (str, optional): the path to the /bin folder of the current venv. Defaults to venv_tesseract_path.
+    Returns:
+        _CompletedProcess_: _the CompletedProcess object created_
     """
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if isinstance(arguments, list):
@@ -117,7 +119,9 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
-            venv_command_wrapper(command="pip", arguments=["install", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
+            print(res.stdout)
+            print(res.stderr)
             print("done.")
     else:     
         if not os.path.exists(venv_tesseract_path):
