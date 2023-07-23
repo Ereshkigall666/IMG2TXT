@@ -123,16 +123,17 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
-            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
             print(res.stdout)
             print(res.stderr)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
                 kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
                 Repo.clone_from(KRAKEN_GIT_PATH, kraken_tmpdir_path)
-                res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path] )
+                res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path])
                 if res.returncode != 0:
                     print("it seems the installation failed.")
+                    print(res.stdout)
                     print(res.stderr)
                     exit()
             print("done.")
