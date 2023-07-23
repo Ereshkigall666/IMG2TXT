@@ -123,8 +123,9 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
-            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", f"git+h{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
             print(res.stdout)
+            print(res.stderr)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
                 Repo.clone_from(KRAKEN_GIT_PATH, cache_dir_path)
@@ -306,7 +307,7 @@ if __name__ == "__main__":
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
-    #set_up_venv(engine="t")
+    set_up_venv(engine="k")
     #print("----------------------MULTIPROCESS----------------------")
     #run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="html", multiprocess=True, dpi=200, number_it=1, nb_core=3)
     #print("----------------------NO MULTIPROCESS----------------------")
@@ -314,4 +315,4 @@ if __name__ == "__main__":
     #other tests
     #download_unzip_binary(binary_name="poppler", bin_link=WIN_POPPLER_LINK, venv_path=venv_tesseract_path)
     #print(venv_get_version_package(package="kraken", venv_path=venv_kraken_path))
-    ocrise_file(filepath="../../Antonomaz/Glane5_process/Glane5-sample/BM01481_MAZ.jpg", output_dir_path="../../Antonomaz/Glane5_process/Glane5-sample_ocr/", engine="k", output_type="txt", venv_path=venv_kraken_path, force=True)
+    #ocrise_file(filepath="../../Antonomaz/Glane5_process/Glane5-sample/BM01481_MAZ.jpg", output_dir_path="../../Antonomaz/Glane5_process/Glane5-sample_ocr/", engine="k", output_type="txt", venv_path=venv_kraken_path, force=True)
