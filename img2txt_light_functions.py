@@ -33,6 +33,7 @@ PY_VERSION_LIST:list = [10, 9, 8]
 WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
 TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
+KRAKEN_GIT_PATH:Final[str] = "https://github.com/mittagessen/kraken.git"
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -122,12 +123,16 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
-            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", "git+https://github.com/mittagessen/kraken.git"], venv_path=venv_kraken_path)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "v", f"git+h{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
             print(res.stdout)
             if res.returncode != 0:
-                print("it seems the installation failed.")
-                print(res.stderr)
-                exit()
+                print("it seems like the installation failed; trying an alternative method.")
+                Repo.clone_from(KRAKEN_GIT_PATH, cache_dir_path)
+                res = venv_command_wrapper(command="pip", arguments=["install", cache_dir_path] )
+                if res.returncode != 0:
+                    print("it seems the installation failed.")
+                    print(res.stderr)
+                    exit()
             print("done.")
     else:     
         if not os.path.exists(venv_tesseract_path):
