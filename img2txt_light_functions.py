@@ -1,4 +1,5 @@
 import os
+from datetime import date
 import subprocess
 import sys
 #import venv
@@ -170,18 +171,27 @@ def find_tesseract_path()->str:
 
 
 def kraken_binarise_image_file(img_path:str, output_type:str="txt", force:bool = False):
-        print(img_path)
-        out_img_path:str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
-        if os.path.exists(out_img_path) and not force:
-            print("this file has already been processed before.")
-            return
-        print("Binarisation...")
-        venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path, "binarize"],venv_path=venv_kraken_path)
-        # Segmentation and ocr
-        print(img_path)
-        print("Segmentation...")
-        venv_command_wrapper(command="kraken", arguments=["-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+    error_log_path:str = os.path.join("logs", f"{date.today()}-kraken-error-log.txt")
+    success_log_path:str = os.path.join("logs", f"{date.today()}-kraken-log.txt")
+    print(img_path)
+    out_img_path:str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
+    if os.path.exists(out_img_path) and not force:
+        print("this file has already been processed before.")
         return
+    print("Binarisation...")
+    venv_command_wrapper(command="kraken", arguments=["-i", img_path, img_path, "binarize"],venv_path=venv_kraken_path)
+    # Segmentation and ocr
+    print(img_path)
+    print("Segmentation...")
+    res = venv_command_wrapper(command="kraken", arguments=["-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+    if res.stderr != "":
+        print(f"-------------ERROR-------------\n{res.stderr}")
+        with open(error_log_path, "a") as error_log_file:
+            error_log_file.write(f"{filepath}\n")
+    else:
+        with open(success_log_path, "a") as success_log_file:
+            success_log_file.write(f"{filepath}\n")
+    return
 
 def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True, nb_core:int = 3, force:bool = False):
     file_list:list = glob.glob(pathname=os.path.join(dir_path, "**", "*.png"), recursive=True)
@@ -200,6 +210,9 @@ def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:
     return
 
 def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lang:str="fra", tesseract_path=None):
+    os.makedirs("logs", exist_ok=True)
+    error_log_path:str = os.path.join("logs", f"{date.today()}-tesseract-error-log.txt")
+    success_log_path:str = os.path.join("logs", f"{date.today()}-tesseract-log.txt")
     if tesseract_path is None:
         tesseract_path = find_tesseract_path()
     print("OCRisation with Tesseract...")
@@ -207,6 +220,12 @@ def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lan
     print(res.stdout)
     if res.stderr != "":
         print(f"-------------ERROR-------------\n{res.stderr}")
+        with open(error_log_path, "a") as error_log_file:
+            error_log_file.write(f"{filepath}\n")
+    else:
+        with open(success_log_path, "a") as success_log_file:
+            success_log_file.write(f"{filepath}\n")
+        
     return
 
 def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra", tesseract_path=None):
