@@ -18,6 +18,9 @@ import zipfile
 import configparser
 from io import BytesIO
 
+# disable max size limit for images
+Image.MAX_IMAGE_PIXELS = None
+
 # global constants
 INPUT_TYPE_LIST:Final[List] = ["pdf","jpg", "jpeg", "png" "tif"]
 OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
