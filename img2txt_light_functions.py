@@ -187,10 +187,10 @@ def kraken_binarise_image_file(img_path:str, output_type:str="txt", force:bool =
     if res.stderr != "":
         print(f"-------------ERROR-------------\n{res.stderr}")
         with open(error_log_path, "a") as error_log_file:
-            error_log_file.write(f"{filepath}\n")
+            error_log_file.write(f"{out_img_path}\n")
     else:
         with open(success_log_path, "a") as success_log_file:
-            success_log_file.write(f"{filepath}\n")
+            success_log_file.write(f"{out_img_path}\n")
     return
 
 def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:bool = True, nb_core:int = 3, force:bool = False):
