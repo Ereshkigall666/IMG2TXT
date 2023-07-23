@@ -128,8 +128,9 @@ def set_up_venv(engine:str="t")->None:
             print(res.stderr)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
-                Repo.clone_from(KRAKEN_GIT_PATH, cache_dir_path)
-                res = venv_command_wrapper(command="pip", arguments=["install", os.path.join(cache_dir_path, "kraken")] )
+                kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
+                Repo.clone_from(KRAKEN_GIT_PATH, kraken_tmpdir_path)
+                res = venv_command_wrapper(command="pip", arguments=["install", kraken_tmpdir_path] )
                 if res.returncode != 0:
                     print("it seems the installation failed.")
                     print(res.stderr)
