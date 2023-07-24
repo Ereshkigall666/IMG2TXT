@@ -37,7 +37,7 @@ WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.e
 
 # Kraken venv constants
 # currently set at 4.3.13.dev25
-KRAKEN_COMMIT:Final[str]="88374f7782ebe3d64b668fc1c9d80f5135912f23"
+KRAKEN_COMMIT:Final[str]="1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 #packages that are version sensitive and seem not to be installed correctly by kraken
 KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["torch==2.0.0", "scipy==1.10.1"]
@@ -132,7 +132,7 @@ def set_up_venv(engine:str="t")->None:
             print("installing version sensitive packages...")
             package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "-v"]
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
-            package_res = venv_command_wrapper(command="pip", arguments=package_arguments)
+            package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path)
             print(package_res.stdout)
             print(package_res.stderr)
             print("installing kraken...")
