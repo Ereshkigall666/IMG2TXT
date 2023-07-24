@@ -129,6 +129,12 @@ def set_up_venv(engine:str="t")->None:
                 print("it seems that there is no supported version of python installed on this computer. Please install python3.10.")
                 return
             #install kraken
+            print("installing version sensitive packages...")
+            package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "-v"]
+            package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
+            package_res = venv_command_wrapper(command="pip", arguments=package_arguments)
+            print(package_res.stdout)
+            print(package_res.stderr)
             print("installing kraken...")
             print("kraken...")
             res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
@@ -144,13 +150,6 @@ def set_up_venv(engine:str="t")->None:
                     print(res.stdout)
                     print(res.stderr)
                     exit()
-            print("installing version sensitive packages...")
-            package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "-v"]
-            package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
-            package_res = venv_command_wrapper(command="pip", arguments=package_arguments)
-            print(package_res.stdout)
-            print(package_res.stderr)
-
             print("done.")
     else:     
         if not os.path.exists(venv_tesseract_path):
