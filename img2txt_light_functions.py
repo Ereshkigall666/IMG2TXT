@@ -35,7 +35,7 @@ WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesser
 TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
 # currently set at 4.3.13.dev25
-KRAKEN_COMMIT:Final[str]="1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
+KRAKEN_COMMIT:Final[str]="88374f7782ebe3d64b668fc1c9d80f5135912f23"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
