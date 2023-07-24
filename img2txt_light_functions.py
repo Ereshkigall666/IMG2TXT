@@ -40,7 +40,7 @@ WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.e
 KRAKEN_COMMIT:Final[str]="88374f7782ebe3d64b668fc1c9d80f5135912f23"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 #packages that are version sensitive and seem not to be installed correctly by kraken
-KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["torch==2.0.0", "scikit-learn==1.1.2"]
+KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["torch==2.0.0", "scipy==1.10.1"]
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
