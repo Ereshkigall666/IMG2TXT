@@ -34,9 +34,13 @@ PY_VERSION_LIST:list = [10, 9, 8]
 WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
 TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
+
+# Kraken venv constants
 # currently set at 4.3.13.dev25
 KRAKEN_COMMIT:Final[str]="88374f7782ebe3d64b668fc1c9d80f5135912f23"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
+#packages that are version sensitive and seem not to be installed correctly by kraken
+KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["torch==2.0.0", "scikit-learn==1.1.2"]
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -126,6 +130,9 @@ def set_up_venv(engine:str="t")->None:
                 return
             #install kraken
             print("installing kraken...")
+            package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "-v"]
+            package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
+            package_res = venv_command_wrapper(command="pip", arguments=package_arguments)
             res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
             print(res.stdout)
             print(res.stderr)
