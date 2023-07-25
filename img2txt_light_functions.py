@@ -65,7 +65,7 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
     Returns:
         _CompletedProcess_: _the CompletedProcess object created_
     """
-    log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w")
+    log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w", encoding="utf-8")
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if stream_output:
         print("streaming output")
