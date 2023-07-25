@@ -65,21 +65,20 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
     Returns:
         _CompletedProcess_: _the CompletedProcess object created_
     """
+    log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w")
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if isinstance(arguments, list):
         arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
         #res = subprocess.run(args=arguments, capture_output=True, text=True)
-        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
         # write to log file
-        log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w")
         while True:
             output_line = process.stdout.readline() #type: ignore
             if output_line == '' and process.poll() is not None:
                 break
             print(output_line)
             log_file.write(output_line)
-        log_file.close()
-            
+            log_file.flush()
     else:
         #res = subprocess.run(args=[os.path.join(venv_path, bin_dir_name, command), arguments], capture_output=True, text=True)
         process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -88,6 +87,8 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
             if output_line == '' and process.poll() is not None:
                 break
             print(output_line)
+            log_file.write(output_line)
+    log_file.close()
     #return res
     return process
 
