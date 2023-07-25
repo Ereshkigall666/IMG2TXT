@@ -248,12 +248,13 @@ def kraken_binarise_image_dir(dir_path:str, output_type:str="txt", multiprocess:
         if ext != "png" and ext != "pdf":
             file_list.extend(glob.glob(pathname=os.path.join(dir_path, "**", ext), recursive=True))
     if multiprocess:
+        print(f"multiprocessing using {nb_core}...")
         file_list = [(filepath, output_type, force) for filepath in file_list]
         pool = Pool(processes=nb_core)
         pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
         pool.close()
-        
     else:
+        print("multiprocessing disabled.")
         for img_path in tqdm(file_list):
                 kraken_binarise_image_file(img_path=img_path, output_type=output_type, force=force)
     return
@@ -286,11 +287,13 @@ def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True
         if ext != "png" and ext != "pdf":
             file_list.extend(glob.glob(pathname=f"{dir_path}/*.{ext}"))
     if multiprocess:
+        print(f"multiprocessing using {nb_core}...")
         file_list = [(filepath, output_type, force, lang, tesseract_path) for filepath in file_list]
         pool = Pool(processes=nb_core)
         pool.starmap(tessaract_ocrise_file, file_list)
         pool.close()
     else:
+        print("multiprocessing disabled.")
         for img_path in file_list:
             tessaract_ocrise_file(filepath=img_path, output_type=output_type, force=force, tesseract_path=tesseract_path)
     return
@@ -326,7 +329,7 @@ def ocrise_file(filepath:str, output_dir_path:str, output_type:str="alto", engin
 def ocrise_dir(input_dir_path:str, output_dir_path:str, output_type:str="alto", engine:str="t", dpi:int=200, venv_path:str=venv_tesseract_path, multiprocess:bool = True, nb_core:int = 3, force:bool = False, tesseract_path=None):
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
-        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=3, force=force, tesseract_path=tesseract_path)
+        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi, venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path)
         # remove pngs
         png_file_list:list = glob.glob(os.path.join(output_dir_path, "**", "*.png"), recursive=True)
         for png_file in png_file_list:
