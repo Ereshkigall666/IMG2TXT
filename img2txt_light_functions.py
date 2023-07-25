@@ -40,7 +40,7 @@ WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.e
 KRAKEN_COMMIT:Final[str]="1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 #packages that are version sensitive and seem not to be installed correctly by kraken
-KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["scipy==1.10.1"]
+KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -68,6 +68,7 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
     log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w")
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if stream_output:
+        print("streaming output")
         if isinstance(arguments, list):
             arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
             process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
@@ -75,9 +76,9 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
                 output_line = process.stdout.readline() #type: ignore
                 if output_line == '' and process.poll() is not None:
                     break
-            print(output_line)
-            log_file.write(output_line)
-            log_file.flush()
+                print(output_line)
+                log_file.write(output_line)
+                log_file.flush()
         else:
             process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             while True:
