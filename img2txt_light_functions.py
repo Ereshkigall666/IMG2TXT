@@ -39,6 +39,7 @@ WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.e
 # currently set at 4.3.13.dev25
 KRAKEN_COMMIT:Final[str]="1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
+KRAKEN_GIT_PATH_GENERIC:Final[str] = f"https://github.com/mittagessen/kraken.git"
 #packages that are version sensitive and seem not to be installed correctly by kraken
 KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
 # convenience variables
@@ -136,6 +137,13 @@ def download_unzip_binary(binary_name:str, bin_link:str, venv_path:str = venv_te
     #print(glob.glob(os.path.join(bin_path, "**", "bin"), recursive=True))
     return bin_path
 
+def display_progress(op_code, cur_count, max_count=None, message=''):
+    if max_count is not None:
+        percent = int((cur_count / max_count) * 100)
+        print(f'{op_code}: {percent}% - {message}', end='\r')
+    else:
+        print(f'{op_code}: {cur_count} - {message}', end='\r')
+    return
 
 def set_up_venv(engine:str="t")->None:
     cache_dir_path:str = ""
@@ -153,18 +161,20 @@ def set_up_venv(engine:str="t")->None:
                 print("it seems that there is no supported version of python installed on this computer. Please install python3.10.")
                 return
             #install kraken
+            print("installing kraken...")
+            print("kraken...")
             res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path, stream_output=True)
             print("installing version sensitive packages...")
             package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
             package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True)
-            print("installing kraken...")
-            print("kraken...")
             if res.returncode != 0:
+            
                 print("it seems like the installation failed; trying an alternative method.")
                 kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
-                Repo.clone_from(KRAKEN_GIT_PATH, kraken_tmpdir_path)
-                res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path])
+                kraken_repo = Repo.clone_from(url=KRAKEN_GIT_PATH_GENERIC, to_path=kraken_tmpdir_path, progress=display_progress)
+                kraken_repo.head.reset(commit=KRAKEN_COMMIT, index=True, working_tree=True)
+                res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}",  kraken_tmpdir_path], venv_path=venv_kraken_path, stream_output=True)
                 if res.returncode != 0:
                     print("it seems the installation failed.")
                     #print(res.stdout)
