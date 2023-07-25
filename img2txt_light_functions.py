@@ -87,6 +87,7 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
                     break
             print(output_line)
             log_file.write(output_line)
+            log_file.flush()
         log_file.close()
         return process
     else:
