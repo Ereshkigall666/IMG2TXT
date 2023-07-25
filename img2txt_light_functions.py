@@ -85,9 +85,9 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
                 output_line = process.stdout.readline() #type: ignore
                 if output_line == '' and process.poll() is not None:
                     break
-            print(output_line)
-            log_file.write(output_line)
-            log_file.flush()
+                print(output_line)
+                log_file.write(output_line)
+                log_file.flush()
         log_file.close()
         return process
     else:
