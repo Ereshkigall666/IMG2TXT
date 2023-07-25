@@ -29,8 +29,8 @@ OUTPUT_TYPE_LIST:Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT:Final[Dict]={"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES:Final[Dict] = {"k": "kraken", "t": "pytesseract"}
 WIN_POPPLER_LINK:Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
-#PY_VERSION_LIST:Final[List] = [10, 9, 8]
-PY_VERSION_LIST:list = [10, 9, 8]
+PY_VERSION_LIST:Final[List] = [9, 8]
+#PY_VERSION_LIST:list = [10, 9, 8]
 WIN_TESSERACT_LINK:Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
 TESSERACT_INSTALL_LINK:Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
@@ -40,7 +40,7 @@ WIN_TESSERACT_EXE_PATH:Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.e
 KRAKEN_COMMIT:Final[str]="1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 KRAKEN_GIT_PATH:Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 #packages that are version sensitive and seem not to be installed correctly by kraken
-KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["torch==2.0.0", "scipy==1.10.1"]
+KRAKEN_SENSITIVE_PACKAGES:Final[list] = ["scipy==1.10.1"]
 # convenience variables
 venv_kraken_path:str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path:str = os.path.join(os.getcwd(), "venv_tesseract")
@@ -68,11 +68,28 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if isinstance(arguments, list):
         arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
-        res = subprocess.run(args=arguments, capture_output=True, text=True)
-        
+        #res = subprocess.run(args=arguments, capture_output=True, text=True)
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        # write to log file
+        log_file = open(os.path.join("logs", "kraken_install_log.txt"), "w")
+        while True:
+            output_line = process.stdout.readline() #type: ignore
+            if output_line == '' and process.poll() is not None:
+                break
+            print(output_line)
+            log_file.write(output_line)
+        log_file.close()
+            
     else:
-        res = subprocess.run(args=[os.path.join(venv_path, bin_dir_name, command), arguments], capture_output=True, text=True)
-    return res
+        #res = subprocess.run(args=[os.path.join(venv_path, bin_dir_name, command), arguments], capture_output=True, text=True)
+        process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        while True:
+            output_line = process.stdout.readline() #type: ignore
+            if output_line == '' and process.poll() is not None:
+                break
+            print(output_line)
+    #return res
+    return process
 
 
 def venv_get_version_package(package:str, venv_path:str=venv_tesseract_path):
@@ -138,8 +155,8 @@ def set_up_venv(engine:str="t")->None:
             print("installing kraken...")
             print("kraken...")
             res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"], venv_path=venv_kraken_path)
-            print(res.stdout)
-            print(res.stderr)
+            ##print(res.stdout)
+            ##print(res.stderr)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
                 kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
@@ -147,8 +164,8 @@ def set_up_venv(engine:str="t")->None:
                 res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path])
                 if res.returncode != 0:
                     print("it seems the installation failed.")
-                    print(res.stdout)
-                    print(res.stderr)
+                    #print(res.stdout)
+                    #print(res.stderr)
                     exit()
             print("done.")
     else:     
