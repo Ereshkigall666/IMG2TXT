@@ -169,12 +169,15 @@ def set_up_venv(engine:str="t")->None:
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
             package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True)
             if res.returncode != 0:
-            
                 print("it seems like the installation failed; trying an alternative method.")
                 kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
                 kraken_repo = Repo.clone_from(url=KRAKEN_GIT_PATH_GENERIC, to_path=kraken_tmpdir_path, progress=display_progress)
                 kraken_repo.head.reset(commit=KRAKEN_COMMIT, index=True, working_tree=True)
                 res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}",  kraken_tmpdir_path], venv_path=venv_kraken_path, stream_output=True)
+                print("installing version sensitive packages...")
+                package_arguments = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
+                package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
+                package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True)
                 if res.returncode != 0:
                     print("it seems the installation failed.")
                     #print(res.stdout)
