@@ -74,22 +74,16 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
         if isinstance(arguments, list):
             arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
             process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
-            while True:
-                output_line = process.stdout.readline() #type: ignore
-                if output_line == '' and process.poll() is not None:
-                    break
-                print(output_line)
-                log_file.write(output_line)
-                log_file.flush()
         else:
-            process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            while True:
-                output_line = process.stdout.readline() #type: ignore
-                if output_line == '' and process.poll() is not None:
-                    break
-                print(output_line)
-                log_file.write(output_line)
-                log_file.flush()
+            process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+        while process.poll() is None:
+            stdout_line = process.stdout.readline() #type: ignore
+            stderr_line = process.stderr.readline() #type: ignore
+            print(stdout_line)
+            print(stderr_line)
+            log_file.write(stdout_line)
+            log_file.write(stderr_line)
+            log_file.flush()
         log_file.close()
         return process
     else:
@@ -204,8 +198,7 @@ def set_up_venv(engine:str="t")->None:
             subprocess.run(args=["python", "-m", "virtualenv", venv_tesseract_path])
             #install tesseract
             print("installing pytesseract...")
-            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
-            print(res.stdout)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "pytesseract","opencv-python"], venv_path=venv_tesseract_path, stream_output=True)
             print("done.")
     return
 
