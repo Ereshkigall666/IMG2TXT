@@ -165,7 +165,7 @@ def set_up_venv(engine:str="t")->None:
             print("installing kraken...")
             print("kraken...")
             res_args: list = ["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"]
-            if platform.machine().endswith("aarch64"):
+            if platform.machine().endswith("armv7l"):
                 res_args.append("--extra-index-url")
                 res_args.extend(PIP_EXTRA_REPOS)
             res = venv_command_wrapper(command="pip", arguments=res_args, venv_path=venv_kraken_path, stream_output=True)
