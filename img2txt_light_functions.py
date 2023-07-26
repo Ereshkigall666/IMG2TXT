@@ -7,6 +7,7 @@ import sys
 import glob
 import tempfile
 import timeit
+import platform
 from multiprocessing import *
 from tqdm.auto import tqdm
 from pathlib import Path
@@ -164,14 +165,16 @@ def set_up_venv(engine:str="t")->None:
             print("installing kraken...")
             print("kraken...")
             res_args: list = ["install", f"--cache-dir={cache_dir_path}", "-v", f"git+{KRAKEN_GIT_PATH}"]
-            res_args.append("--extra-index-url")
-            res_args.extend(PIP_EXTRA_REPOS)
+            if platform.machine().endswith("aarch64"):
+                res_args.append("--extra-index-url")
+                res_args.extend(PIP_EXTRA_REPOS)
             res = venv_command_wrapper(command="pip", arguments=res_args, venv_path=venv_kraken_path, stream_output=True)
             print("installing version sensitive packages...")
             package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
-            res_args.append("--extra-index-url")
-            res_args.extend(PIP_EXTRA_REPOS)
+            if platform.machine().endswith("aarch64"):
+                res_args.append("--extra-index-url")
+                res_args.extend(PIP_EXTRA_REPOS)
             package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
