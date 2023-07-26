@@ -203,14 +203,17 @@ def set_up_venv(engine:str="t")->None:
 def find_tesseract_path()->str:
     tesseract_path:str = ""
     if not sys.platform.startswith("win"):
-        res = subprocess.run(args=["which", "tesseract"], capture_output=True, text=True)
-        which_out:str = res.stdout.strip()
-        if not os.path.exists(os.path.realpath(which_out)) or res.returncode != 0:
+        res = None
+        # some distros have 'tesseract-ocr' as the relevant name (e.g void)
+        for tesseract_name in ["tesseract-ocr", "tesseract"]:
+            res = subprocess.run(args=["which", tesseract_name], capture_output=True, text=True)
+            which_out:str = res.stdout.strip()
+            if os.path.exists(os.path.realpath(which_out)) and res.returncode == 0:
+                tesseract_path = os.path.realpath(which_out)
+                break
+        else:
             print(f"it looks like tesseract is not installed on this system.Please install it at: {TESSERACT_INSTALL_LINK}. If it is installed, it may simply not be in your PATH.")
             sys.exit()
-        else:
-            tesseract_path = os.path.realpath(which_out)
-
     else:
         tesseract_path = WIN_TESSERACT_EXE_PATH
         if not os.path.exists(tesseract_path):
@@ -279,6 +282,7 @@ def tessaract_ocrise_file(filepath:str, output_type:str, force:bool = False, lan
     return
 
 def tessaract_ocrise_dir(dir_path:str, output_type:str, multiprocess:bool = True, nb_core:int = 3, force:bool = False, lang:str="fra", tesseract_path=None):
+    print(f"multiprocessing={multiprocess}")
     if tesseract_path is None:
         tesseract_path = find_tesseract_path()
         print(tesseract_path)
