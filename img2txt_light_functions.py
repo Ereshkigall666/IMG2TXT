@@ -78,11 +78,12 @@ def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path
             process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
         while process.poll() is None:
             stdout_line = process.stdout.readline() #type: ignore
-            stderr_line = process.stderr.readline() #type: ignore
             print(stdout_line, flush=True)
-            print(stderr_line, flush=True)
             log_file.write(stdout_line)
-            log_file.write(stderr_line)
+            if process.stderr is not None:
+                stderr_line = process.stderr.readline() #type: ignore
+                print(stderr_line, flush=True)
+                log_file.write(stderr_line)
             log_file.flush()
         log_file.close()
         return process
