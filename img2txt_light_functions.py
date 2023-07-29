@@ -172,7 +172,7 @@ def set_up_venv(engine:str="t")->None:
             print("installing version sensitive packages...")
             package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
-            if platform.machine().endswith("aarch64"):
+            if platform.machine().endswith("armv7l"):
                 res_args.append("--extra-index-url")
                 res_args.extend(PIP_EXTRA_REPOS)
             package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True, log_mode="a", log_name=log_name)
