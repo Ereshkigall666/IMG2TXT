@@ -2,10 +2,10 @@ import os
 from datetime import date
 import subprocess
 import sys
+import logging
 #import venv
 #import virtualenv
 import glob
-import tempfile
 import timeit
 import platform
 from multiprocessing import *
@@ -57,35 +57,40 @@ benchmark_dir_path:str = os.path.join(os.getcwd(), "benchmarks")
 def glob_path_dir(dir_path:str):
     return glob.glob(os.path.join(dir_path, "**", "*"), recursive=True)
 
-def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path:str=venv_tesseract_path, stream_output:bool = False):
+def venv_command_wrapper(command:str, arguments:Union[str, list[str]], venv_path:str=venv_tesseract_path, stream_output:bool = False, log_name:str= f"{date.today()}-log.txt", log_mode:str = "w"):
     """_wrapper to run python subprocesses using the virtual environment.
     Example: "pip3 install pytesseract opencv-python" -----> venv_command_wrapper(command="pip3", arguments=["install", "pytesseract","opencv-python"], venv_path=venv_tesseract_path)
     Args:
-        command (str):command name
-        arguments (str | list[str]): the arguments for the command
-        venv_path (str, optional): the path to the /bin folder of the current venv. Defaults to venv_tesseract_path.
+        command (str): _description_
+        arguments (Union[str, list[str]]): _description_
+        venv_path (str, optional): _description_. Defaults to venv_tesseract_path.
+        stream_output (bool, optional): whether to stream output to terminal or not. If set, also writes to log file. Defaults to False.
+        log_name (str, optional): _description_. Defaults to f"{date.today()}-log.txt".
+        log_mode (str, optional): _description_. Defaults to "w".
+
     Returns:
-        _CompletedProcess_: _the CompletedProcess object created_
+        _type_: _description_
     """
-    log_file = open(file=os.path.join("logs", "kraken_install_log.txt"), mode="w", encoding="utf-8")
+    # setting up log files
+    logger = logging.getLogger(__name__)
+    logger.addHandler(fh := logging.FileHandler(filename=log_name, mode=log_mode, encoding="utf-8", delay=True))
+    # MUST BE SET /!\ or the FileHandler won't be created at all
+    logger.setLevel(logging.DEBUG)
     bin_dir_name:str = "bin" if not sys.platform.startswith("win") else "Scripts"
     if stream_output:
         print("streaming output")
         if isinstance(arguments, list):
+            logger.info(f"**********{command} {' '.join(arguments)}**********")
             arguments.insert(0, os.path.join(venv_path, bin_dir_name, command))
-            process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+            process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, encoding="utf-8")
         else:
-            process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+            logger.info(f"**********{command} {arguments}**********")
+            process = subprocess.Popen([os.path.join(venv_path, bin_dir_name, command), arguments], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, encoding="utf-8")
         while process.poll() is None:
             stdout_line = process.stdout.readline() #type: ignore
+            logger.debug(stdout_line)
+            fh.flush()
             print(stdout_line, flush=True)
-            log_file.write(stdout_line)
-            if process.stderr is not None:
-                stderr_line = process.stderr.readline() #type: ignore
-                print(stderr_line, flush=True)
-                log_file.write(stderr_line)
-            log_file.flush()
-        log_file.close()
         return process
     else:
         if isinstance(arguments, list):
@@ -147,7 +152,7 @@ def set_up_venv(engine:str="t")->None:
         if not os.path.exists(venv_kraken_path):
             print("Création de l'environement virtuel kraken.")
             cache_dir_path = os.path.join(venv_kraken_path, "tmp")
-            #venv.create(env_dir=venv_kraken_path, with_pip=True, symlinks=True, upgrade_deps=True)
+            log_name:str = os.path.join("logs", "kraken_install_log.txt")
             # try to create venv with any of the supported python versions if they're present on the system
             for version_num in PY_VERSION_LIST:
                 sub_process=subprocess.run(args=["python", "-m", "virtualenv", f"--python=python3.{version_num}", venv_kraken_path])
@@ -159,29 +164,28 @@ def set_up_venv(engine:str="t")->None:
             #install kraken
             print("installing kraken...")
             print("kraken...")
-            #res = venv_command_wrapper(command="pip",  arguments=["install", "coremltools==6.0", f"--cache-dir={cache_dir_path}", "-vv"], venv_path=venv_kraken_path, stream_output=True)
             res_args: list = ["install", f"--cache-dir={cache_dir_path}", "-vvv", "--debug", f"git+{KRAKEN_GIT_PATH}"]
             if platform.machine().endswith("armv7l"):
                 res_args.append("--extra-index-url")
                 res_args.extend(PIP_EXTRA_REPOS)
-            res = venv_command_wrapper(command="pip", arguments=res_args, venv_path=venv_kraken_path, stream_output=True)
+            res = venv_command_wrapper(command="pip", arguments=res_args, venv_path=venv_kraken_path, stream_output=True, log_mode="w", log_name=log_name)
             print("installing version sensitive packages...")
             package_arguments:list = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
             package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
             if platform.machine().endswith("aarch64"):
                 res_args.append("--extra-index-url")
                 res_args.extend(PIP_EXTRA_REPOS)
-            package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True)
+            package_res = venv_command_wrapper(command="pip", arguments=package_arguments, venv_path=venv_kraken_path, stream_output=True, log_mode="a", log_name=log_name)
             if res.returncode != 0:
                 print("it seems like the installation failed; trying an alternative method.")
                 kraken_tmpdir_path:str = os.path.join(cache_dir_path, "kraken")
                 kraken_repo = Repo.clone_from(url=KRAKEN_GIT_PATH_GENERIC, to_path=kraken_tmpdir_path, progress=display_progress)
                 kraken_repo.head.reset(commit=KRAKEN_COMMIT, index=True, working_tree=True)
-                res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path], venv_path=venv_kraken_path, stream_output=True)
+                res = venv_command_wrapper(command="pip", arguments=["install", "-v", f"--cache-dir={cache_dir_path}", kraken_tmpdir_path], venv_path=venv_kraken_path, stream_output=True, log_mode="a", log_name=log_name)
                 print("installing version sensitive packages...")
                 package_arguments = ["install", f"--cache-dir={cache_dir_path}", "--force-reinstall", "-v"]
                 package_arguments.extend(KRAKEN_SENSITIVE_PACKAGES)
-                package_res = venv_command_wrapper(command="pip", arguments=package_arguments,venv_path=venv_kraken_path, stream_output=True)
+                package_res = venv_command_wrapper(command="pip", arguments=package_arguments,venv_path=venv_kraken_path, stream_output=True, log_mode="a", log_name=log_name)
                 print("removing temporary kraken clone...")
                 rmtree(kraken_tmpdir_path)
                 print("kraken clone successfully removed.")
@@ -195,11 +199,11 @@ def set_up_venv(engine:str="t")->None:
         if not os.path.exists(venv_tesseract_path):
             print("Création de l'environement virtuel tesseract.")
             cache_dir_path = os.path.join(venv_tesseract_path, "tmp")
-            #venv.create(env_dir=venv_tesseract_path, with_pip=True, symlinks=True, upgrade_deps=True)
+            log_name = os.path.join("logs", "tesseract_install_log.txt")
             subprocess.run(args=["python", "-m", "virtualenv", venv_tesseract_path])
             #install tesseract
             print("installing pytesseract...")
-            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "pytesseract","opencv-python"], venv_path=venv_tesseract_path, stream_output=True)
+            res = venv_command_wrapper(command="pip", arguments=["install", f"--cache-dir={cache_dir_path}", "pytesseract","opencv-python"], venv_path=venv_tesseract_path, stream_output=True, log_mode="w", log_name=log_name)
             print("done.")
     return
 
