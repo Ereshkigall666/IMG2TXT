@@ -12,7 +12,21 @@ It is available at: https://github.com/e-ditiones/OCR17
 - Python >= 3.8 and < 3.11 (if you want to use the Kraken engine: Python3.11 is supported with Tesseract)    
 - Tesseract (for the tesseract engine)   
 
-### Python dependencies   
+## Hardware support
+
+IMG2TXT should run on most x86-64 computers.
+
+#### Raspberry Pi
+
+#### Pi 4
+
+IMG2TXT can run on a Pi4 and has been tested on one, but it requires some tweaks in the installation process in particular for kraken. The installation may be longer as some packages may need to be installed from source: furthermore, a bug with PyTorch necessitates a specific workaround to get torch to run correctly (see ![issue 97226](https://github.com/pytorch/pytorch/issues/97226)). Built-in support for Pi4s will be added in the coming days.
+
+### Earlier generations
+
+IMG2TXT is currently being tested on older generations. However, please keep in mind that this is a rather CPU-intensive programme; a Pi3 or earlier may not be the best fit for it in terms of power.
+
+## Python dependencies   
 
 - pdf2image==1.16.3
 - PyPDF2==3.0.1
