@@ -23,10 +23,10 @@ The list of currently available kraken models is given below; the models in ital
 - *10.5281/zenodo.10066219 (pytorch) \- CATMuS Medieval*
 - *10.5281/zenodo.8425684 (pytorch) \- Experimental printed syriac model*
 - *10.5281/zenodo.8193498 (pytorch) \- Transcription model for Lucien Peraire's handwriting (French, 20th century)*
-- **10.5281/zenodo.7933463 (pytorch) \- HTR model for German manuscripts trained from several datasets**
-- **10.5281/zenodo.7933402 (pytorch) \- Fraktur model trained from enhanced Austrian Newspapers dataset**
-- **10.5281/zenodo.7631619 (pytorch) \- Model trained on all available data, from 8th to 16th century, from GalliCorpora, CREMMA Medieval and CREMMA Medieval Lat, as well as data from Eutyches, Caroline Minuscule, DecameronFR. Transcription guidelines: https://hal.archives-ouvertes.fr/hal-03697382**
-- *10.5281/zenodo.7410529 (pytorch) \- Gallicorpora+ ancient prints (Litterature)**
+- *10.5281/zenodo.7933463 (pytorch) \- HTR model for German manuscripts trained from several datasets*
+- *10.5281/zenodo.7933402 (pytorch) \- Fraktur model trained from enhanced Austrian Newspapers dataset*
+- *10.5281/zenodo.7631619 (pytorch) \- Model trained on all available data, from 8th to 16th century, from GalliCorpora, CREMMA Medieval and CREMMA Medieval Lat, as well as data from Eutyches, Caroline Minuscule, DecameronFR. Transcription guidelines: https://hal.archives-ouvertes.fr/hal-03697382*
+- *10.5281/zenodo.7410529 (pytorch) \- Gallicorpora+ ancient prints (Litterature)*
 - *10.5281/zenodo.7051646 (pytorch) \- Printed Urdu Base Model Trained on the OpenITI Corpus*
 - *10.5281/zenodo.7051644 (pytorch) \- Printed Persian Base Model Trained on the OpenITI Corpus*
 - *10.5281/zenodo.7050342 (pytorch) \- Printed Ottoman Base Model Trained on the OpenITI Corpus*
