@@ -8,4 +8,5 @@ venv_kraken/*
 venv_tesseract/*
 dummy_corpus_res/*
 *_ocr/*
-todo.txt
+todo.*
+kraken_models_list.txt
