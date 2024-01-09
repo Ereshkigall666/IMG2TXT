@@ -15,7 +15,7 @@ The list of available tesseract models is available here: https://tesseract-ocr.
 
 ### Kraken    
 
-The list of currently available kraken models is given (here)[https://github.com/Ereshkigall666/IMG2TXT/blob/main/kraken_models.md]; the models in italics are not yet available directly within IMG2TXT.    
+The list of currently available kraken models is given [here](https://github.com/Ereshkigall666/IMG2TXT/blob/main/kraken_models.md); the models in italics are not yet available directly within IMG2TXT.    
 ## Requirements
 
 ### On all systems
