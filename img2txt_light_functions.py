@@ -56,7 +56,7 @@ venv_kraken_path: str = os.path.join(os.getcwd(), "venv_kraken")
 venv_tesseract_path: str = os.path.join(os.getcwd(), "venv_tesseract")
 test_dir_path: str = "dummy_corpus"
 output_dir_path: str = os.path.join(os.getcwd(), "dummy_corpus_res")
-corpus_model_path: str = os.path.join(model_dir, "CORPUS17.mlmodel")
+corpus_model_path_fra_17: str = os.path.join(model_dir, "CORPUS17.mlmodel")
 benchmark_dir_path: str = os.path.join(os.getcwd(), "benchmarks")
 
 
@@ -300,6 +300,8 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     if lang is not None and lang in KRAKEN_MODELS:
         corpus_model_path: str = os.path.join(
             model_dir, KRAKEN_MODELS[lang]["name"])
+    else:
+        corpus_model_path: str = corpus_model_path_fra_17
     error_log_path: str = os.path.join(
         "logs", f"{date.today()}-kraken-error-log.txt")
     success_log_path: str = os.path.join(
