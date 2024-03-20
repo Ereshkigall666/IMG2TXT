@@ -40,7 +40,7 @@ PIP_EXTRA_REPOS: Final[List] = ["https://www.piwheels.org/simple"]
 KRAKEN_GIT_PATH_GENERIC: Final[str] = f"https://github.com/mittagessen/kraken.git"
 # specific commits
 # currently set at 4.3.13.dev25
-# KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
+KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 # newest: 09/01/2024
 # KRAKEN_COMMIT: Final[str] = "e80308be69041517a97feac903c5c7cf2690227b"
 # KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
@@ -50,6 +50,8 @@ KRAKEN_SENSITIVE_PACKAGES: Final[list] = []
 # KRAKEN_SENSITIVE_PACKAGES: Final[list] = ["scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
 KRAKEN_MODELS: Final[dict[dict]] = {"eng": {"kraken_key": "10.5281/zenodo.2577813", "doi": "2577813", "name": "en_best.mlmodel"},
                                     "fra-lectaurep": {"kraken_key": "10.5281/zenodo.6542744", "doi": "6542744", "name": "lectaurep_base.mlmodel"}, "fra": {"kraken_key": "10.5281/zenodo.6657809", "doi": "6657809", "name": "HTR-United-Manu_McFrench.mlmodel"}}
+KRAKEN_VERSIONS: Final[dict[str, str]] = {
+    "4.3.13.dev25": "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"}
 # convenience variables
 model_dir: str = "models"
 venv_kraken_path: str = os.path.join(os.getcwd(), "venv_kraken")
@@ -163,17 +165,24 @@ def display_progress(op_code, cur_count, max_count=None, message=''):
     return
 
 
-def set_up_venv(engine: str = "t") -> None:
+def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, force: bool = False) -> None:
     cache_dir_path: str = ""
+    python_path: str = sys.executable
+    kraken_git_path: str = KRAKEN_GIT_PATH
     if engine == "k":
-        if not os.path.exists(venv_kraken_path):
+        if ((not os.path.exists(venv_kraken_path)) or force):
             print("Création de l'environement virtuel kraken.")
+            if kraken_version is not None:
+                kraken_commit = KRAKEN_VERSIONS[kraken_version]
+                kraken_git_path = f"https://github.com/mittagessen/kraken.git@{kraken_commit}"
+            print(kraken_git_path)
             cache_dir_path = os.path.join(venv_kraken_path, "tmp")
-            log_name: str = os.path.join("logs", "kraken_install_log.txt")
+            log_name: str = os.path.join(
+                "logs", f"kraken_install_log_{date.today()}.txt")
             # try to create venv with any of the supported python versions if they're present on the system
             for version_num in PY_VERSION_LIST:
                 sub_process = subprocess.run(
-                    args=["python", "-m", "virtualenv", f"--python=python3.{version_num}", venv_kraken_path])
+                    args=[python_path, "-m", "virtualenv", f"--python=python3.{version_num}", venv_kraken_path])
                 if sub_process.returncode == 0:
                     break
             else:
@@ -228,7 +237,7 @@ def set_up_venv(engine: str = "t") -> None:
                     exit()
             print("done.")
     else:
-        if not os.path.exists(venv_tesseract_path):
+        if ((not os.path.exists(venv_tesseract_path) or force)):
             print("Création de l'environement virtuel tesseract.")
             cache_dir_path = os.path.join(venv_tesseract_path, "tmp")
             log_name = os.path.join("logs", "tesseract_install_log.txt")
@@ -447,7 +456,7 @@ def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "al
     return
 
 
-def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: str = None, keep_png: bool = False):
+def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: str = None, keep_png: bool = False, kraken_version: Union[None, str] = None):
     print(lang)
     # preliminary steps
     if engine.lower() in ENGINE_DICT.values():
@@ -461,10 +470,10 @@ def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t",
     if sys.platform.startswith("win") and engine == "k":
         print("Unfortunately, Windows is not supported on kraken. Defaulting to tesseract.")
         engine = "t"
-    # actual script
+   # actual script
     # set up virtual environment
     venv_path: str = venv_kraken_path if engine == "k" else venv_tesseract_path
-    set_up_venv(engine=engine)
+    set_up_venv(engine=engine, kraken_version=kraken_version)
     # download language models as needed
     if lang is not None and lang in KRAKEN_MODELS:
         print(f"downloading {lang} model...")
