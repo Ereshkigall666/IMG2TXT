@@ -244,7 +244,7 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
             log_name = os.path.join(
                 SCRIPT_DIR, "logs", "tesseract_install_log.txt")
             subprocess.run(
-                args=["python", "-m", "virtualenv", venv_tesseract_path])
+                args=[python_path, "-m", "virtualenv", venv_tesseract_path])
             # install tesseract
             print("installing pytesseract...")
             res = venv_command_wrapper(command="pip", arguments=[
