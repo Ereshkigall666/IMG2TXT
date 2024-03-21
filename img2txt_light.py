@@ -43,7 +43,7 @@ if __name__ == "__main__":
                             help="whether to png artifacts or not.", action="store_true")
     # shared arguments
     parser.add_argument(
-        "-kv", "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
+        "-k_v", "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
     # running the programme
     if not sys.argv[1] in subcommands:
         sys.argv.insert(default_subcommand, 1)
