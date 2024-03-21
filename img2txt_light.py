@@ -7,7 +7,7 @@ epilog: str = ""
 
 if __name__ == "__main__":
     parser: ArgumentParser = ArgumentParser(description=description, epilog=epilog,
-                                            formatter_class=ArgumentDefaultsHelpFormatter)
+                                            formatter_class=ArgumentDefaultsHelpFormatter, add_help=False)
     # subcommand parsers
     subparsers = parser.add_subparsers(
         dest="command", description="All of the available subcommands.")
@@ -17,8 +17,11 @@ if __name__ == "__main__":
         "-f", "--force", help="reinstall the specified venv even if it is found to already exist.", action="store_true")
     install_parser.add_argument("engine", default="t", help="the OCR engine to use.", choices=[
         engine for iterable in [ENGINE_DICT.keys(), ENGINE_DICT.values()] for engine in iterable], type=str)
+    install_parser.add_argument("-k_v",
+                                "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
     # default subparser and arguments
-    ocr_parser = subparsers.add_parser("ocr", help="OCRise a corpus.")
+    ocr_parser = subparsers.add_parser(
+        "ocr", help="OCRise a corpus.")
     ocr_parser.add_argument(
         "corpus_path", help="path to the corpus you want to OCRise.")
     ocr_parser.add_argument("-o_fmt", "--output_format", default="txt",
@@ -41,18 +44,17 @@ if __name__ == "__main__":
         "-l", "--lang", help=f"specify the language model to use for OCRisation. Possible values: {KRAKEN_MODELS.keys()}", default=None, type=str)
     ocr_parser.add_argument("-k", "--keep_png",
                             help="whether to png artifacts or not.", action="store_true")
-    # shared arguments
-    parser.add_argument(
-        "-k_v", "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
+    ocr_parser.add_argument("-k_v",
+                            "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
     # running the programme
     if not sys.argv[1] in subcommands:
         sys.argv.insert(default_subcommand, 1)
     args = parser.parse_args()
     # print(args)
     if args.command == "install":
-        set_up_venv(engine=args.engine, force=args.force)
+        set_up_venv(engine=args.engine, force=args.force,
+                    kraken_version=args.kraken_version)
     else:
         img_to_txt(input_dir_path=args.corpus_path, output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir,
                    dpi=args.dpi, multiprocess=(not args.no_multiprocess), nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path, lang=args.lang, keep_png=args.keep_png, kraken_version=args.kraken_version)
-
 # TODO: enable shell completion
