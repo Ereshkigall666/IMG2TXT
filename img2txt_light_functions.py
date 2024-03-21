@@ -477,7 +477,7 @@ def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t",
     venv_path: str = venv_kraken_path if engine == "k" else venv_tesseract_path
     set_up_venv(engine=engine, kraken_version=kraken_version)
     # download language models as needed
-    if lang is not None and lang in KRAKEN_MODELS:
+    if lang is not None and lang in KRAKEN_MODELS and engine == "k":
         print(f"downloading {lang} model...")
         download_kraken_models(lang=lang, venv_path=venv_path)
     # ocrisation
