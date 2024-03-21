@@ -48,7 +48,8 @@ KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git"
 # packages that are version sensitive and seem not to be installed correctly by kraken
 KRAKEN_SENSITIVE_PACKAGES: Final[list] = []
-# KRAKEN_SENSITIVE_PACKAGES: Final[list] = ["scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
+KRAKEN_SENSITIVE_PACKAGES: Final[list] = [
+    "scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
 KRAKEN_MODELS: Final[dict[dict]] = {"eng": {"kraken_key": "10.5281/zenodo.2577813", "doi": "2577813", "name": "en_best.mlmodel"},
                                     "fra-lectaurep": {"kraken_key": "10.5281/zenodo.6542744", "doi": "6542744", "name": "lectaurep_base.mlmodel"}, "fra": {"kraken_key": "10.5281/zenodo.6657809", "doi": "6657809", "name": "HTR-United-Manu_McFrench.mlmodel"}}
 KRAKEN_VERSIONS: Final[dict[str, str]] = {
