@@ -60,7 +60,8 @@ venv_kraken_path: str = os.path.join(SCRIPT_DIR, "venv_kraken")
 venv_tesseract_path: str = os.path.join(SCRIPT_DIR, "venv_tesseract")
 test_dir_path: str = "dummy_corpus"
 output_dir_path: str = os.path.join(SCRIPT_DIR, "dummy_corpus_res")
-corpus_model_path_fra_17: str = os.path.join(model_dir, "CORPUS17.mlmodel")
+corpus_model_path_fra_17: str = os.path.join(
+    SCRIPT_DIR, model_dir, "CORPUS17.mlmodel")
 benchmark_dir_path: str = os.path.join(SCRIPT_DIR, "benchmarks")
 
 
