@@ -58,9 +58,9 @@ model_dir: str = "models"
 venv_kraken_path: str = os.path.join(SCRIPT_DIR, "venv_kraken")
 venv_tesseract_path: str = os.path.join(SCRIPT_DIR, "venv_tesseract")
 test_dir_path: str = "dummy_corpus"
-output_dir_path: str = os.path.join(os.getcwd(), "dummy_corpus_res")
+output_dir_path: str = os.path.join(SCRIPT_DIR, "dummy_corpus_res")
 corpus_model_path_fra_17: str = os.path.join(model_dir, "CORPUS17.mlmodel")
-benchmark_dir_path: str = os.path.join(os.getcwd(), "benchmarks")
+benchmark_dir_path: str = os.path.join(SCRIPT_DIR, "benchmarks")
 
 
 def glob_path_dir(dir_path: str):
@@ -194,7 +194,7 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
             print("installing kraken...")
             print("kraken...")
             res_args: list = [
-                "install", f"--cache-dir={cache_dir_path}", "-vvv", "--debug", f"git+{KRAKEN_GIT_PATH}"]
+                "install", f"--cache-dir={cache_dir_path}", "-vvv", "--debug", f"git+{kraken_git_path}"]
             if platform.machine().endswith("armv7l"):
                 res_args.append("--extra-index-url")
                 res_args.extend(PIP_EXTRA_REPOS)
@@ -305,6 +305,11 @@ def find_tesseract_path() -> str:
                 f"it looks like tesseract is not installed on this system. Please install it at: {TESSERACT_INSTALL_LINK}.  If it is installed, it may simply not be in your PATH.")
             sys.exit()
     return tesseract_path
+
+
+def find_tesseract_lang_path() -> str:
+
+    return
 
 
 def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang=None):
