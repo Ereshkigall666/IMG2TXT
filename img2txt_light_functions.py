@@ -336,9 +336,13 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     res = venv_command_wrapper(command="kraken", arguments=[
                                "-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
     if res.stderr != "":
-        print(f"-------------ERROR-------------\n{res.stderr}")
+        error_message: str = f"-------------ERROR-------------\n{res.stderr}"
+        print(error_message)
         with open(error_log_path, "a") as error_log_file:
-            error_log_file.write(f"{out_img_path}\n")
+            error_log_file.write(f"file: {out_img_path}\n")
+            error_log_file.write(f"error message:\n")
+            error_log_file.write(f"{error_message}\n")
+
     else:
         with open(success_log_path, "a") as success_log_file:
             success_log_file.write(f"{out_img_path}\n")
