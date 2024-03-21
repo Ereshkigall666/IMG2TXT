@@ -241,7 +241,8 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
         if ((not os.path.exists(venv_tesseract_path) or force)):
             print("Création de l'environement virtuel tesseract.")
             cache_dir_path = os.path.join(venv_tesseract_path, "tmp")
-            log_name = os.path.join("logs", "tesseract_install_log.txt")
+            log_name = os.path.join(
+                SCRIPT_DIR, "logs", "tesseract_install_log.txt")
             subprocess.run(
                 args=["python", "-m", "virtualenv", venv_tesseract_path])
             # install tesseract
@@ -312,10 +313,10 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
             model_dir, KRAKEN_MODELS[lang]["name"])
     else:
         corpus_model_path: str = corpus_model_path_fra_17
-    error_log_path: str = os.path.join(
-        "logs", f"{date.today()}-kraken-error-log.txt")
-    success_log_path: str = os.path.join(
-        "logs", f"{date.today()}-kraken-log.txt")
+    error_log_path: str = os.path.join(SCRIPT_DIR,
+                                       "logs", f"{date.today()}-kraken-error-log.txt")
+    success_log_path: str = os.path.join(SCRIPT_DIR,
+                                         "logs", f"{date.today()}-kraken-log.txt")
     print(img_path)
     out_img_path: str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
     if os.path.exists(out_img_path) and not force:
@@ -362,11 +363,11 @@ def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiproc
 
 
 def tesseract_ocrise_file(filepath: str, output_type: str, force: bool = False, lang: str = "fra", tesseract_path=None):
-    os.makedirs("logs", exist_ok=True)
-    error_log_path: str = os.path.join(
-        "logs", f"{date.today()}-tesseract-error-log.txt")
-    success_log_path: str = os.path.join(
-        "logs", f"{date.today()}-tesseract-log.txt")
+    os.makedirs(os.path.join(SCRIPT_DIR, "logs"), exist_ok=True)
+    error_log_path: str = os.path.join(SCRIPT_DIR,
+                                       "logs", f"{date.today()}-tesseract-error-log.txt")
+    success_log_path: str = os.path.join(SCRIPT_DIR,
+                                         "logs", f"{date.today()}-tesseract-log.txt")
     if tesseract_path is None:
         tesseract_path = find_tesseract_path()
     print("OCRisation with Tesseract...")
