@@ -25,6 +25,7 @@ from io import BytesIO
 Image.MAX_IMAGE_PIXELS = None
 
 # global constants
+SCRIPT_DIR: Final[str] = os.path.dirname(os.path.realpath(__file__))
 INPUT_TYPE_LIST: Final[List] = ["pdf", "jpg", "jpeg", "png" "tif"]
 OUTPUT_TYPE_LIST: Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT: Final[Dict] = {"k": "kraken", "t": "tesseract"}
@@ -177,8 +178,8 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
                 kraken_git_path = f"https://github.com/mittagessen/kraken.git@{kraken_commit}"
             print(kraken_git_path)
             cache_dir_path = os.path.join(venv_kraken_path, "tmp")
-            log_name: str = os.path.join(
-                "logs", f"kraken_install_log_{date.today()}.txt")
+            log_name: str = os.path.join(SCRIPT_DIR,
+                                         "logs", f"kraken_install_log_{date.today()}.txt")
             # try to create venv with any of the supported python versions if they're present on the system
             for version_num in PY_VERSION_LIST:
                 sub_process = subprocess.run(
