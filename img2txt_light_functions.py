@@ -372,7 +372,7 @@ def tesseract_ocrise_file(filepath: str, output_type: str, force: bool = False, 
         tesseract_path = find_tesseract_path()
     print("OCRisation with Tesseract...")
     res = venv_command_wrapper(command="python", arguments=[
-                               "tesseract_ocr.py", filepath, output_type, str(force), lang, tesseract_path])
+                               os.path.join(SCRIPT_DIR, "tesseract_ocr.py"), filepath, output_type, str(force), lang, tesseract_path])
     print(res.stdout)
     if res.stderr != "":
         print(f"-------------ERROR-------------\n{res.stderr}")
