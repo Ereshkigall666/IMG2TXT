@@ -1,6 +1,6 @@
 from argparse import *
 from img2txt_light_functions import *
-subcommands: list[str] = ["install"]
+subcommands: List[str] = ["install", "-h", "--help", "ocr"]
 default_subcommand: str = "ocr"
 description: str = "a command line utility to OCRise corpora using kraken or tesseract."
 epilog: str = ""
