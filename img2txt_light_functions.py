@@ -350,7 +350,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
 
     else:
         with open(success_log_path, "a") as success_log_file:
-            succes_log_file.write(
+            success_log_file.write(
                 f"date: {current_date.date()}, {current_date.hour}\n")
             success_log_file.write(f"{out_img_path}\n")
     return
