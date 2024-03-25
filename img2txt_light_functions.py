@@ -9,6 +9,7 @@ import glob
 import timeit
 import platform
 from multiprocessing import *
+from multiprocessing.pool import ThreadPool
 from tqdm.auto import tqdm
 from pathlib import Path
 from typing import Final, Dict, List, Union
@@ -366,7 +367,7 @@ def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiproc
         print(f"multiprocessing using {nb_core}...")
         file_list = [(filepath, output_type, force, lang)
                      for filepath in file_list]
-        pool = Pool(processes=nb_core)
+        pool: ThreadPool = ThreadPool(processes=nb_core)
         pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
         pool.close()
         pool.join()
@@ -422,7 +423,7 @@ def tesseract_ocrise_dir(dir_path: str, output_type: str, multiprocess: bool = T
         print(f"multiprocessing using {nb_core}...")
         file_list = [(filepath, output_type, force, lang, tesseract_path)
                      for filepath in file_list]
-        pool = Pool(processes=nb_core)
+        pool: ThreadPool = ThreadPool(processes=nb_core)
         pool.starmap(tesseract_ocrise_file, file_list)
         pool.close()
         pool.join()
