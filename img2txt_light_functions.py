@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 import subprocess
 import sys
 import logging
@@ -323,6 +323,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
                                        "logs", f"{date.today()}-kraken-error-log.txt")
     success_log_path: str = os.path.join(SCRIPT_DIR,
                                          "logs", f"{date.today()}-kraken-log.txt")
+    current_date: datetime = datetime.now()
     print(img_path)
     out_img_path: str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
     if os.path.exists(out_img_path) and not force:
@@ -340,12 +341,16 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
         error_message: str = f"-------------ERROR-------------\n{res.stderr}"
         print(error_message)
         with open(error_log_path, "a") as error_log_file:
+            error_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
             error_log_file.write(f"file: {out_img_path}\n")
             error_log_file.write(f"error message:\n")
             error_log_file.write(f"{error_message}\n")
 
     else:
         with open(success_log_path, "a") as success_log_file:
+            succes_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
             success_log_file.write(f"{out_img_path}\n")
     return
 
@@ -364,6 +369,7 @@ def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiproc
         pool = Pool(processes=nb_core)
         pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
         pool.close()
+        pool.join()
     else:
         print("multiprocessing disabled.")
         for img_path in tqdm(file_list):
@@ -378,6 +384,7 @@ def tesseract_ocrise_file(filepath: str, output_type: str, force: bool = False, 
                                        "logs", f"{date.today()}-tesseract-error-log.txt")
     success_log_path: str = os.path.join(SCRIPT_DIR,
                                          "logs", f"{date.today()}-tesseract-log.txt")
+    current_date: datetime = datetime.now()
     if tesseract_path is None:
         tesseract_path = find_tesseract_path()
     print("OCRisation with Tesseract...")
@@ -385,13 +392,20 @@ def tesseract_ocrise_file(filepath: str, output_type: str, force: bool = False, 
                                os.path.join(SCRIPT_DIR, "tesseract_ocr.py"), filepath, output_type, str(force), lang, tesseract_path])
     print(res.stdout)
     if res.stderr != "":
-        print(f"-------------ERROR-------------\n{res.stderr}")
+        error_message: str = f"-------------ERROR-------------\n{res.stderr}"
+        print(error_message)
         with open(error_log_path, "a") as error_log_file:
+            error_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
             error_log_file.write(f"{filepath}\n")
+            error_log_file.write(f"error message:\n")
+            error_log_file.write(f"{error_message}\n")
+
     else:
         with open(success_log_path, "a") as success_log_file:
+            succes_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
             success_log_file.write(f"{filepath}\n")
-
     return
 
 
@@ -411,6 +425,7 @@ def tesseract_ocrise_dir(dir_path: str, output_type: str, multiprocess: bool = T
         pool = Pool(processes=nb_core)
         pool.starmap(tesseract_ocrise_file, file_list)
         pool.close()
+        pool.join()
     else:
         print("multiprocessing disabled.")
         for img_path in file_list:
