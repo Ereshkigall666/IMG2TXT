@@ -406,9 +406,12 @@ def tesseract_ocrise_file(filepath: str, output_type: str, force: bool = False, 
 
     else:
         with open(success_log_path, "a") as success_log_file:
-            success_log_file.write(
-                f"date: {current_date.date()}, {current_date.hour}\n")
-            success_log_file.write(f"{filepath}\n")
+            try:
+                success_log_file.write(
+                    f"date: {current_date.date()}, {current_date.hour}\n")
+                success_log_file.write(f"{filepath}\n")
+            except Exception as e:
+                print(e)
     return
 
 
