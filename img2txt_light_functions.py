@@ -347,12 +347,14 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
             error_log_file.write(f"file: {out_img_path}\n")
             error_log_file.write(f"error message:\n")
             error_log_file.write(f"{error_message}\n")
-
     else:
         with open(success_log_path, "a") as success_log_file:
             success_log_file.write(
                 f"date: {current_date.date()}, {current_date.hour}\n")
-            success_log_file.write(f"{out_img_path}\n")
+            try:
+                success_log_file.write(f"{out_img_path}\n")
+            except Exception as e:
+                print(e)
     return
 
 
