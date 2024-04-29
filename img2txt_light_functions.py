@@ -315,6 +315,7 @@ def find_tesseract_lang_path() -> str:
 
 
 def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang=None):
+    output_type_opt: str = f"--{output_type}" if output_type != "txt" else "-o txt"
     if lang is not None and lang in KRAKEN_MODELS:
         corpus_model_path: str = os.path.join(
             model_dir, KRAKEN_MODELS[lang]["name"])
@@ -337,7 +338,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     print(img_path)
     print("Segmentation...")
     res = venv_command_wrapper(command="kraken", arguments=[
-                               "-i", img_path, out_img_path, "-o", output_type,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+                               "-i", img_path, out_img_path, output_type_opt,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
     if res.stderr != "":
         error_message: str = f"-------------ERROR-------------\n{res.stderr}"
         print(error_message)
@@ -441,7 +442,7 @@ def tesseract_ocrise_dir(dir_path: str, output_type: str, multiprocess: bool = T
 
 
 def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None):
-    file_Path = Path(filepath)
+    file_Path: Path = Path(filepath)
     # create one subdirectory for each file
     res_dir_path: str = os.path.join(
         output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", file_Path.stem)
@@ -542,13 +543,14 @@ def run_benchmark(input_dir_path: str, benchmark_dir_path: str = benchmark_dir_p
 
 
 if __name__ == "__main__":
-    # img_to_txt(input_dir_path=test_dir_path, output_dir_path=None, output_type="alto", engine="t")
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None,
+               output_type="txt", engine="k", lang="fra", force=True, keep_png=False)
     # tesseract
     # run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     # run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
     # kraken
     # set_up_venv(engine="k")
-    download_kraken_models(lang="en")
+    # download_kraken_models(lang="en")
     # print("----------------------MULTIPROCESS----------------------")
     # run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="html", multiprocess=True, dpi=200, number_it=1, nb_core=3)
     # print("----------------------NO MULTIPROCESS----------------------")

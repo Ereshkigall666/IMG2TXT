@@ -31,7 +31,7 @@ if __name__ == '__main__':
                 txt := pytesseract.image_to_string(img, lang=lang, config="--psm 1"))
         else:  # alto
             (output_file := io.open(file=output_path, mode='wb')).write(
-                alto := pytesseract.image_to_alto_xml(img, lang=lang, config="--psm 1"))  # type: ignore
+                alto := pytesseract.image_to_alto_xml(img, lang=lang, config="--psm 1"))
         print("done.")
         output_file.close()
         sys.exit()
