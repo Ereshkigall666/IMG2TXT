@@ -544,7 +544,14 @@ def run_benchmark(input_dir_path: str, benchmark_dir_path: str = benchmark_dir_p
 
 if __name__ == "__main__":
     img_to_txt(input_dir_path=test_dir_path, output_dir_path=None,
-               output_type="txt", engine="k", lang="fra", force=True, keep_png=False)
+               output_type="txt", engine="k", lang=None, force=True, keep_png=False)
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None,
+               output_type="alto", engine="k", lang=None, force=True, keep_png=False)
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None,
+               output_type="txt", engine="t", lang="fra", force=True, keep_png=False)
+    img_to_txt(input_dir_path=test_dir_path, output_dir_path=None,
+               output_type="alto", engine="t", lang="fra", force=True, keep_png=False)
+
     # tesseract
     # run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="txt", multiprocess=True, dpi=200, number_it=5)
     # run_benchmark(input_dir_path=test_dir_path,benchmark_dir_path=benchmark_dir_path, engine="t", output_type="alto", multiprocess=False, dpi=200, number_it=5)
