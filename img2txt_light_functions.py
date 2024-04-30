@@ -363,21 +363,33 @@ def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "txt", e
     return
 
 
-def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None, model: Union[None, str] = None, keep_png: bool = False):
-    for filepath in tqdm(glob_path_dir(input_dir_path)):
-        print(filepath)
-        ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi,
-                    venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, model=model)
-        # remove pngs
-        if keep_png == False:
-            png_file_list: list = glob.glob(os.path.join(
-                output_dir_path, "**", "*.png"), recursive=True)
-            for png_file in png_file_list:
-                os.remove(png_file)
+def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None, model: Union[None, str] = None, keep_png: bool = False, multiprocess_document: bool = False):
+    file_list: str = glob_path_dir(input_dir_path)
+    if multiprocess_document:
+        print(
+            f"multiprocessing using {nb_core}: multiprocessing over documents.")
+        multiprocess = False
+        file_list: list = [(filepath, output_dir_path, output_type, engine, dpi, venv_path, multiprocess, nb_core, force, tesseract_path, lang, model)
+                           for filepath in file_list]
+        pool: ThreadPool = ThreadPool(processes=nb_core)
+        pool.starmap(func=ocrise_file, iterable=tqdm(file_list))
+        pool.close()
+        pool.join()
+    else:
+        for filepath in tqdm(file_list):
+            print(filepath)
+            ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi,
+                        venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, model=model)
+    # remove pngs
+    if keep_png == False:
+        png_file_list: list = glob.glob(os.path.join(
+            output_dir_path, "**", "*.png"), recursive=True)
+        for png_file in png_file_list:
+            os.remove(png_file)
     return
 
 
-def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: Union[None, str] = None, keep_png: bool = False, model: Union[None, str] = None, kraken_version: Union[None, str] = None):
+def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, multiprocess_document: bool = False, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: Union[None, str] = None, keep_png: bool = False, model: Union[None, str] = None, kraken_version: Union[None, str] = None):
     # preliminary steps
     if engine.lower() in ENGINE_DICT.values():
         for key in ENGINE_DICT:
@@ -401,7 +413,7 @@ def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t",
         download_kraken_models(lang=lang, venv_path=venv_path)
     # ocrisation
     ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi,
-               venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, keep_png=keep_png, model=model)
+               venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, keep_png=keep_png, model=model, multiprocess_document=multiprocess_document)
     return
 
 

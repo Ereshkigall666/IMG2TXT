@@ -34,6 +34,8 @@ if __name__ == "__main__":
         "-dpi", type=int, help="image quality to aim for.", default=200)
     ocr_parser.add_argument("-nm", "--no_multiprocess",
                             help="disables multiprocessing. Multiprocessing is highly recommended as it speeds up the OCRisation process significantly", action="store_true")
+    ocr_parser.add_argument("-m_d", "--multiprocess_documents",
+                            help="enables multiprocessing over documents (instead of pages). Recommended for corpora with a lot of small files.", action="store_true")
     ocr_parser.add_argument(
         "-nc", "--nb_core", help="number of cores to use if multiprocessing is used.", default=3, type=int)
     ocr_parser.add_argument(
@@ -60,5 +62,5 @@ if __name__ == "__main__":
                     kraken_version=args.kraken_version)
     else:
         img_to_txt(input_dir_path=args.corpus_path, output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir,
-                   dpi=args.dpi, multiprocess=(not args.no_multiprocess), nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path, lang=args.lang, keep_png=args.keep_png, kraken_version=args.kraken_version, model=args.model)
+                   dpi=args.dpi, multiprocess=(not args.no_multiprocess), nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path, lang=args.lang, keep_png=args.keep_png, kraken_version=args.kraken_version, model=args.model, multiprocess_document=args.multiprocess_documents)
 # TODO: enable shell completion
