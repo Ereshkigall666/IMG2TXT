@@ -179,7 +179,7 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
     return
 
 
-def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None, segmentation_mode: str = "bl", binarise: bool = False):
+def kraken_ocrise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None, segmentation_mode: str = "bl", binarise: bool = False):
     output_type_opt: str = f"--{output_type}" if output_type != "txt" else "-o txt"
     if model is not None:
         corpus_model_path: str = model
@@ -195,6 +195,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     current_date: datetime = datetime.now()
     print(img_path)
     out_img_path: str = f"{os.path.join(os.path.dirname(img_path), f'{Path(img_path).stem}.{output_type}')}"
+    print(out_img_path)
     if os.path.exists(out_img_path) and not force:
         print("this file has already been processed before.")
         return
@@ -203,7 +204,6 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
         venv_command_wrapper(command="kraken", arguments=[
             "-i", img_path, img_path, "binarize"], venv_path=venv_kraken_path)
     # Segmentation and ocr
-    print(img_path)
     print("Segmentation...")
     res = venv_command_wrapper(command="kraken", arguments=[
                                "-i", img_path, out_img_path, output_type_opt,  "segment", "-bl", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
@@ -227,7 +227,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     return
 
 
-def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiprocess: bool = True, nb_core: int = 3, force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None):
+def kraken_ocrise_image_dir(dir_path: str, output_type: str = "txt", multiprocess: bool = True, nb_core: int = 3, force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None):
     file_list: list = glob.glob(pathname=os.path.join(
         dir_path, "**", "*.png"), recursive=True)
     for ext in INPUT_TYPE_LIST:
@@ -242,13 +242,13 @@ def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiproc
         file_list = [(filepath, output_type, force, lang)
                      for filepath in file_list]
         pool: ThreadPool = ThreadPool(processes=nb_core)
-        pool.starmap(func=kraken_binarise_image_file, iterable=tqdm(file_list))
+        pool.starmap(func=kraken_ocrise_image_file, iterable=tqdm(file_list))
         pool.close()
         pool.join()
     else:
         print("multiprocessing disabled.")
         for img_path in tqdm(file_list):
-            kraken_binarise_image_file(
+            kraken_ocrise_image_file(
                 img_path=img_path, output_type=output_type, force=force, lang=lang)
     return
 
@@ -357,10 +357,10 @@ def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "txt", e
         copy(src=filepath, dst=os.path.join(
             res_dir_path, os.path.basename(filepath)))
 
-        # Binarisation with kraken if kraken
+        # ocrisation
     if engine == "k":
-        kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type,
-                                  multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang, model=model)
+        kraken_ocrise_image_dir(dir_path=res_dir_path, output_type=output_type,
+                                multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang, model=model)
     else:
         tesseract_ocrise_dir(dir_path=res_dir_path, output_type=output_type,
                              multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang)
