@@ -42,6 +42,9 @@ if __name__ == "__main__":
                             help="link to the tesseract binary path (useful if it is installed in an unusual location and not in your PATH).", default=None, type=str)
     ocr_parser.add_argument(
         "-l", "--lang", help=f"specify the language model to use for OCRisation. Possible values: {KRAKEN_MODELS.keys()}", default=None, type=str)
+    ocr_parser.add_argument(
+        "-m", "--model", help=f"path to the model to use. Currently available for kraken.", default=None, type=str)
+
     ocr_parser.add_argument("-k", "--keep_png",
                             help="whether to png artifacts or not.", action="store_true")
     ocr_parser.add_argument("-k_v",
@@ -57,5 +60,5 @@ if __name__ == "__main__":
                     kraken_version=args.kraken_version)
     else:
         img_to_txt(input_dir_path=args.corpus_path, output_type=args.output_format, engine=args.engine, output_dir_path=args.output_dir,
-                   dpi=args.dpi, multiprocess=(not args.no_multiprocess), nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path, lang=args.lang, keep_png=args.keep_png, kraken_version=args.kraken_version)
+                   dpi=args.dpi, multiprocess=(not args.no_multiprocess), nb_core=args.nb_core, force=args.force, tesseract_path=args.tesseract_path, lang=args.lang, keep_png=args.keep_png, kraken_version=args.kraken_version, model=args.model)
 # TODO: enable shell completion

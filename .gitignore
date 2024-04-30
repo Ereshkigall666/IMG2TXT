@@ -11,3 +11,6 @@ dummy_corpus_res/*
 todo.*
 kraken_models_list.txt
 alessandra*/*
+logs/*
+other/*
+.DS_Store

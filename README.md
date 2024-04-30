@@ -100,15 +100,16 @@ usage: img2txt_light.py [-h] [-o_fmt {txt,html,alto}] [-o OUTPUT_DIR]
 -  \-t_path TESSERACT_PATH, \-\-tesseract_path TESSERACT_PATH: link to the tesseract binary path (useful if it is installed in an unusual location and not in your PATH). (default: None)
 -  \-l LANG, \-\-lang LANG:  specify the language model to use for OCRisation. Possible values: dict_keys(['eng', 'fra-lectaurep', 'fra']) (default: None)
 -  \-k, \-\-keep_png: whether to png artifacts or not. (default: False)      
+-  \-m, \-\-model: path to the model to use. Currently available for kraken.
 
 ### Examples   
 
-- `python3 img2txt_light.py my_data`: OCRise all the documents in the my_data directory, using default settings (i.e tesseract engine, with multiprocessing, and with txt as the output type)
-- `python3 img2txt_light.py my_data -o_fmt html -e kraken`: OCRise all the documents in the my_data directory, using the Kraken engine and outputting the processed files as html files
+- `python3 img2txt_light.py my_data`: OCRise all the documents in the <my_data> directory, using default settings (i.e tesseract engine, with multiprocessing, and with txt as the output type)
+- `python3 img2txt_light.py my_data -o_fmt alto -e kraken`: OCRise all the documents in the <my_data> directory, using the Kraken engine and outputting the processed files as alto files
 
 ### Note
 
-The default language model used for Tesseract is the French one at the moment since this was our use case; a command line option to pick the language to use will be added shortly.
+It is necessary to at least specify either the language to use(with the --language option), or the specific model to use for ocrisation (with the --model option).
 
 ## Limitations   
 

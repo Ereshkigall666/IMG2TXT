@@ -1,19 +1,17 @@
-import os
+# import os
+# import platform
 from datetime import date, datetime
 import subprocess
 import sys
 import logging
-# import venv
-# import virtualenv
 import glob
 import timeit
-import platform
 from multiprocessing import *
 from multiprocessing.pool import ThreadPool
 from tqdm.auto import tqdm
 from pathlib import Path
 from typing import Final, Dict, List, Union
-from shutil import copy, rmtree
+# from shutil import copy, rmtree
 import pdf2image
 from PIL import Image
 import requests
@@ -21,52 +19,13 @@ import zipfile
 from git import Repo
 import configparser
 from io import BytesIO
+from img2txt_light_utils import *
+from tesseract_utils import *
+from kraken_utils import *
+from constants import *
 
 # disable max size limit for images
 Image.MAX_IMAGE_PIXELS = None
-
-# global constants
-SCRIPT_DIR: Final[str] = os.path.dirname(os.path.realpath(__file__))
-INPUT_TYPE_LIST: Final[List] = ["pdf", "jpg", "jpeg", "png" "tif"]
-OUTPUT_TYPE_LIST: Final[List] = ["txt", "html", "alto"]
-ENGINE_DICT: Final[Dict] = {"k": "kraken", "t": "tesseract"}
-ENGINE_PACKAGES: Final[Dict] = {"k": "kraken", "t": "pytesseract"}
-WIN_POPPLER_LINK: Final[str] = "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest"
-# PY_VERSION_LIST:Final[List] = [9, 8]
-PY_VERSION_LIST: list = [10, 9, 8]
-WIN_TESSERACT_LINK: Final[str] = "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest"
-TESSERACT_INSTALL_LINK: Final[str] = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
-WIN_TESSERACT_EXE_PATH: Final[str] = "C:\Program Files\Tesseract-OCR\\tesseract.exe"
-PIP_EXTRA_REPOS: Final[List] = ["https://www.piwheels.org/simple"]
-# Kraken venv constants
-KRAKEN_GIT_PATH_GENERIC: Final[str] = f"https://github.com/mittagessen/kraken.git"
-# specific commits
-# currently set at 4.3.13.dev25
-KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
-# newest: 09/01/2024
-# KRAKEN_COMMIT: Final[str] = "e80308be69041517a97feac903c5c7cf2690227b"
-# KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
-KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git"
-# packages that are version sensitive and seem not to be installed correctly by kraken
-KRAKEN_SENSITIVE_PACKAGES: Final[list] = []
-KRAKEN_SENSITIVE_PACKAGES: Final[list] = [
-    "scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
-KRAKEN_MODELS: Final[dict[dict]] = {"eng": {"kraken_key": "10.5281/zenodo.2577813", "doi": "2577813", "name": "en_best.mlmodel"},
-                                    "fra-lectaurep": {"kraken_key": "10.5281/zenodo.6542744", "doi": "6542744", "name": "lectaurep_base.mlmodel"}, "fra": {"kraken_key": "10.5281/zenodo.6657809", "doi": "6657809", "name": "HTR-United-Manu_McFrench.mlmodel"}}
-KRAKEN_VERSIONS: Final[dict[str, str]] = {
-    "4.3.13.dev25": "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"}
-# convenience variables
-model_dir: str = os.path.join(SCRIPT_DIR, "models")
-venv_kraken_path: str = os.path.join(SCRIPT_DIR, "venv_kraken")
-venv_tesseract_path: str = os.path.join(SCRIPT_DIR, "venv_tesseract")
-test_dir_path: str = "dummy_corpus"
-output_dir_path: str = os.path.join(SCRIPT_DIR, "dummy_corpus_res")
-corpus_model_path_fra_17: str = os.path.join(model_dir, "CORPUS17.mlmodel")
-benchmark_dir_path: str = os.path.join(SCRIPT_DIR, "benchmarks")
-
-
-def glob_path_dir(dir_path: str):
-    return glob.glob(os.path.join(dir_path, "**", "*"), recursive=True)
 
 
 def venv_command_wrapper(command: str, arguments: Union[str, list[str]], venv_path: str = venv_tesseract_path, stream_output: bool = False, log_name: str = f"{date.today()}-log.txt", log_mode: str = "w"):
@@ -131,41 +90,6 @@ def venv_get_version_package(package: str, venv_path: str = venv_tesseract_path)
     if "Version" in cfg:
         return cfg["Version"]
     return None
-
-
-def download_unzip_binary(binary_name: str, bin_link: str, venv_path: str = venv_tesseract_path, github_api: bool = True, force: bool = False) -> str:
-    """Fetches compressed binaries and downloads them to <venv_path>/<other_bin>
-    Args:
-        binary_name (str): the name under which the binary will be downloaded. Can end up being either a file or a directory depending on what the specific binary is like.
-        bin_link (str, optional): the link to the binary to download.
-        venv_path (str, optional): [description]. Defaults to venv_tesseract_path. Path to the virtual environment currently used. 
-    """
-    bin_path: str = os.path.join(venv_path, "other_bin", binary_name)
-    if os.path.exists(bin_path):
-        print("already installed")
-    else:
-        if github_api:
-            release_data = requests.get(bin_link).json()
-            if bin_link == WIN_POPPLER_LINK:
-                bin_link = release_data["assets"][0]["browser_download_url"]
-                print(bin_link)
-            elif bin_link == WIN_TESSERACT_LINK:
-                bin_link = release_data["zipball_url"]
-
-        r = requests.get(bin_link)
-        with zipfile.ZipFile(file=BytesIO(r.content), mode="r") as zip_ref:
-            zip_ref.extractall(path=bin_path)
-    # print(glob.glob(os.path.join(bin_path, "**", "bin"), recursive=True))
-    return bin_path
-
-
-def display_progress(op_code, cur_count, max_count=None, message=''):
-    if max_count is not None:
-        percent = int((cur_count / max_count) * 100)
-        print(f'{op_code}: {percent}% - {message}', end='\r')
-    else:
-        print(f'{op_code}: {cur_count} - {message}', end='\r')
-    return
 
 
 def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, force: bool = False) -> None:
@@ -255,68 +179,11 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
     return
 
 
-def download_kraken_models(lang: str, model_dir: str = model_dir, venv_path: str = venv_kraken_path):
-    output_file: str = os.path.join(model_dir, KRAKEN_MODELS[lang]['name'])
-    if not os.path.exists(output_file):
-        zenodo_url: str = f"https://zenodo.org/api/records/{KRAKEN_MODELS[lang]['doi']}"
-        print(zenodo_url)
-        response = requests.get(zenodo_url)
-        data = response.json()
-        # Find the file URL in the response
-        file_url = None
-        for file in data["files"]:
-            # Change "model.pth" to the actual file name you want
-            if file["key"].endswith("mlmodel"):
-                file_url = file["links"]["self"]
-                print(file_url)
-                break
-
-        if file_url is None:
-            print("File not found.")
-            return
-
-        # Download the file
-        response = requests.get(file_url)
-        with open(output_file, "wb") as f:
-            f.write(response.content)
-
-        print(f"File downloaded to {output_file}")
-    return
-
-
-def find_tesseract_path() -> str:
-    tesseract_path: str = ""
-    if not sys.platform.startswith("win"):
-        res = None
-        # some distros have 'tesseract-ocr' as the relevant name (e.g void)
-        for tesseract_name in ["tesseract-ocr", "tesseract"]:
-            res = subprocess.run(
-                args=["which", tesseract_name], capture_output=True, text=True)
-            which_out: str = res.stdout.strip()
-            if os.path.exists(os.path.realpath(which_out)) and res.returncode == 0:
-                tesseract_path = os.path.realpath(which_out)
-                break
-        else:
-            print(
-                f"it looks like tesseract is not installed on this system.Please install it at: {TESSERACT_INSTALL_LINK}. If it is installed, it may simply not be in your PATH.")
-            sys.exit()
-    else:
-        tesseract_path = WIN_TESSERACT_EXE_PATH
-        if not os.path.exists(tesseract_path):
-            print(
-                f"it looks like tesseract is not installed on this system. Please install it at: {TESSERACT_INSTALL_LINK}.  If it is installed, it may simply not be in your PATH.")
-            sys.exit()
-    return tesseract_path
-
-
-def find_tesseract_lang_path() -> str:
-
-    return
-
-
-def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang=None):
+def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None):
     output_type_opt: str = f"--{output_type}" if output_type != "txt" else "-o txt"
-    if lang is not None and lang in KRAKEN_MODELS:
+    if model is not None:
+        corpus_model_path: str = model
+    elif lang is not None and lang in KRAKEN_MODELS:
         corpus_model_path: str = os.path.join(
             model_dir, KRAKEN_MODELS[lang]["name"])
     else:
@@ -359,7 +226,7 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     return
 
 
-def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiprocess: bool = True, nb_core: int = 3, force: bool = False, lang=None):
+def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiprocess: bool = True, nb_core: int = 3, force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None):
     file_list: list = glob.glob(pathname=os.path.join(
         dir_path, "**", "*.png"), recursive=True)
     for ext in INPUT_TYPE_LIST:
@@ -441,11 +308,31 @@ def tesseract_ocrise_dir(dir_path: str, output_type: str, multiprocess: bool = T
     return
 
 
-def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None):
+def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "txt", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: Union[None, str] = None, model: Union[None, str] = None):
+    """OCRise the file found at <filepath>.
+
+    Args:
+        filepath (str): The path to the file to ocrise. Can be a pdf or an image.
+        output_dir_path (str): WIP
+        output_type (str, optional): The format used for the output. Options are: txt, alto. Defaults to "txt".
+        engine (str, optional): The engine to use for OCRisation. Options are: "t" (tesseract), "k" (kraken). Defaults to "t".
+        dpi (int, optional): WIP. Defaults to 200.
+        venv_path (str, optional): WIP. Defaults to venv_tesseract_path.
+        multiprocess (bool, optional): WIP. Defaults to True.
+        nb_core (int, optional): WIP Defaults to 3.
+        force (bool, optional): WIP. Defaults to False.
+        tesseract_path (_type_, optional): WIP. Defaults to None.
+        lang (Union[None, str], optional): WIP. Defaults to None.
+        model (Union[None, str], optional): WIP. Defaults to None.
+    """
     file_Path: Path = Path(filepath)
     # create one subdirectory for each file
-    res_dir_path: str = os.path.join(
-        output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", lang, file_Path.stem)
+    if lang is None and model is not None:
+        res_dir_path: str = os.path.join(
+            output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", Path(model).stem, file_Path.stem)
+    else:
+        res_dir_path: str = os.path.join(
+            output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", lang, file_Path.stem)
     os.makedirs(name=res_dir_path, exist_ok=True)
     # print(res_dir_path)
     # split file into image pages
@@ -469,18 +356,18 @@ def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "alto", 
     # Binarisation with kraken if kraken
     if engine == "k":
         kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type,
-                                  multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang)
+                                  multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang, model=model)
     else:
         tesseract_ocrise_dir(dir_path=res_dir_path, output_type=output_type,
                              multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang)
     return
 
 
-def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None, keep_png: bool = False):
+def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "alto", engine: str = "t", dpi: int = 200, venv_path: str = venv_tesseract_path, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang=None, model: Union[None, str] = None, keep_png: bool = False):
     for filepath in tqdm(glob_path_dir(input_dir_path)):
         print(filepath)
         ocrise_file(filepath=filepath, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi,
-                    venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang)
+                    venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, model=model)
         # remove pngs
         if keep_png == False:
             png_file_list: list = glob.glob(os.path.join(
@@ -490,8 +377,7 @@ def ocrise_dir(input_dir_path: str, output_dir_path: str, output_type: str = "al
     return
 
 
-def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: str = None, keep_png: bool = False, kraken_version: Union[None, str] = None):
-    print(lang)
+def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t", output_dir_path: Union[str, None] = None, dpi: int = 200, multiprocess: bool = True, nb_core: int = 3, force: bool = False, tesseract_path=None, lang: Union[None, str] = None, keep_png: bool = False, model: Union[None, str] = None, kraken_version: Union[None, str] = None):
     # preliminary steps
     if engine.lower() in ENGINE_DICT.values():
         for key in ENGINE_DICT:
@@ -499,9 +385,10 @@ def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t",
                 engine = key
                 break
     if output_dir_path is None:
-        output_dir_path = os.path.join(os.path.dirname(
-            input_dir_path), f"{Path(input_dir_path).stem}_ocr")
-    if sys.platform.startswith("win") and engine == "k":
+        # output_dir_path = os.path.join(os.path.dirname(input_dir_path), f"{Path(input_dir_path).stem}_ocr")
+        output_dir_path = create_output_dir_path(input_dir_path=input_dir_path)
+    # if sys.platform.startswith("win") and engine == "k":
+    if not os_is_compatible(engine=engine):
         print("Unfortunately, Windows is not supported on kraken. Defaulting to tesseract.")
         engine = "t"
    # actual script
@@ -514,12 +401,11 @@ def img_to_txt(input_dir_path: str, output_type: str = "txt", engine: str = "t",
         download_kraken_models(lang=lang, venv_path=venv_path)
     # ocrisation
     ocrise_dir(input_dir_path=input_dir_path, output_dir_path=output_dir_path, output_type=output_type, engine=engine, dpi=dpi,
-               venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, keep_png=keep_png)
+               venv_path=venv_path, multiprocess=multiprocess, nb_core=nb_core, force=force, tesseract_path=tesseract_path, lang=lang, keep_png=keep_png, model=model)
     return
 
 
 # TESTS
-
 def run_benchmark(input_dir_path: str, benchmark_dir_path: str = benchmark_dir_path, engine: str = "t", output_type: str = "txt", multiprocess: bool = True, dpi: int = 200, number_it: int = 1, nb_core: int = 3):
     bench_filepath: str = os.path.join(
         benchmark_dir_path, f"{ENGINE_DICT[engine]}-benchmark.csv")
