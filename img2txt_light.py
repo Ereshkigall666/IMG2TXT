@@ -48,7 +48,8 @@ if __name__ == "__main__":
                             "--kraken_version", help=f"specify the version of kraken to install in the venv. Possible values: {KRAKEN_VERSIONS.keys()}", default=None, type=str)
     # running the programme
     if not sys.argv[1] in subcommands:
-        sys.argv.insert(default_subcommand, 1)
+        print(sys.argv[1])
+        sys.argv.insert(1, default_subcommand)
     args = parser.parse_args()
     # print(args)
     if args.command == "install":

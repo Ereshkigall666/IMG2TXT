@@ -445,7 +445,7 @@ def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "alto", 
     file_Path: Path = Path(filepath)
     # create one subdirectory for each file
     res_dir_path: str = os.path.join(
-        output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", file_Path.stem)
+        output_dir_path, f"{ENGINE_DICT[engine]}{venv_get_version_package(package=ENGINE_PACKAGES[engine], venv_path=venv_path)}", lang, file_Path.stem)
     os.makedirs(name=res_dir_path, exist_ok=True)
     # print(res_dir_path)
     # split file into image pages
