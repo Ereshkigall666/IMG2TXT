@@ -11,7 +11,7 @@ from multiprocessing.pool import ThreadPool
 from tqdm.auto import tqdm
 from pathlib import Path
 from typing import Final, Dict, List, Union
-# from shutil import copy, rmtree
+from shutil import copy, rmtree
 import pdf2image
 from PIL import Image
 import requests
@@ -179,7 +179,7 @@ def set_up_venv(engine: str = "t", kraken_version: Union[None, str] = None, forc
     return
 
 
-def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None):
+def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: bool = False, lang: Union[str, None] = None, model: Union[None, str] = None, segmentation_mode: str = "bl", binarise: bool = False):
     output_type_opt: str = f"--{output_type}" if output_type != "txt" else "-o txt"
     if model is not None:
         corpus_model_path: str = model
@@ -198,14 +198,15 @@ def kraken_binarise_image_file(img_path: str, output_type: str = "txt", force: b
     if os.path.exists(out_img_path) and not force:
         print("this file has already been processed before.")
         return
-    print("Binarisation...")
-    venv_command_wrapper(command="kraken", arguments=[
-                         "-i", img_path, img_path, "binarize"], venv_path=venv_kraken_path)
+    if binarise or segmentation_mode != "bl":
+        print("Binarisation...")
+        venv_command_wrapper(command="kraken", arguments=[
+            "-i", img_path, img_path, "binarize"], venv_path=venv_kraken_path)
     # Segmentation and ocr
     print(img_path)
     print("Segmentation...")
     res = venv_command_wrapper(command="kraken", arguments=[
-                               "-i", img_path, out_img_path, output_type_opt,  "segment", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+                               "-i", img_path, out_img_path, output_type_opt,  "segment", "-bl", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
     if res.stderr != "":
         error_message: str = f"-------------ERROR-------------\n{res.stderr}"
         print(error_message)
@@ -231,8 +232,11 @@ def kraken_binarise_image_dir(dir_path: str, output_type: str = "txt", multiproc
         dir_path, "**", "*.png"), recursive=True)
     for ext in INPUT_TYPE_LIST:
         if ext != "png" and ext != "pdf":
+            print(ext)
             file_list.extend(glob.glob(pathname=os.path.join(
-                dir_path, "**", ext), recursive=True))
+                dir_path, "**", f"*.{ext}"), recursive=True))
+    print("***********************")
+    print(file_list)
     if multiprocess:
         print(f"multiprocessing using {nb_core}...")
         file_list = [(filepath, output_type, force, lang)
@@ -349,11 +353,11 @@ def ocrise_file(filepath: str, output_dir_path: str, output_type: str = "txt", e
         pdf2image.convert_from_path(pdf_path=filepath, output_folder=res_dir_path, fmt="png",
                                     output_file=file_Path.stem, dpi=dpi, poppler_path=poppler_bin_path)  # type: ignore
     else:
-        (Image.open(filepath)).save(os.path.join(
-            res_dir_path, f"{file_Path.stem}.png"))
-        # copy(src=filepath, dst=os.path.join(res_dir_path, os.path.basename(filepath)))
+        # (Image.open(filepath)).save(os.path.join(res_dir_path, f"{os.path.basename(filepath)}"))
+        copy(src=filepath, dst=os.path.join(
+            res_dir_path, os.path.basename(filepath)))
 
-    # Binarisation with kraken if kraken
+        # Binarisation with kraken if kraken
     if engine == "k":
         kraken_binarise_image_dir(dir_path=res_dir_path, output_type=output_type,
                                   multiprocess=multiprocess, nb_core=nb_core, force=force, lang=lang, model=model)

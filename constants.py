@@ -3,7 +3,7 @@ from typing import Final, Dict, List, Union
 
 # global constants
 SCRIPT_DIR: Final[str] = os.path.dirname(os.path.realpath(__file__))
-INPUT_TYPE_LIST: Final[List] = ["pdf", "jpg", "jpeg", "png" "tif"]
+INPUT_TYPE_LIST: Final[List] = ["pdf", "jpg", "jpeg", "png", "tif"]
 OUTPUT_TYPE_LIST: Final[List] = ["txt", "html", "alto"]
 ENGINE_DICT: Final[Dict] = {"k": "kraken", "t": "tesseract"}
 ENGINE_PACKAGES: Final[Dict] = {"k": "kraken", "t": "pytesseract"}
