@@ -22,6 +22,7 @@ from git import Repo
 import configparser
 from io import BytesIO
 from constants import *
+from venv_utils import *
 
 
 def get_repo_url(lang: str, repo: str, doi: str, download_token: str | None = None) -> str | None:
@@ -69,6 +70,37 @@ def download_kraken_models(lang: str, model_dir: str = model_dir, venv_path: str
             f.write(response.content)
         print(f"File downloaded to {output_file}")
     return
+
+
+def select_kraken_model(model: Union[None, str] = None, seg: bool = False) -> str:
+    model_dict: dict[str, dict[str, str]
+                     ] = KRAKEN_MODELS if not seg else KRAKEN_SEG_MODELS
+    if model is None and not seg:
+        return corpus_model_path_fra_17
+    if model in model_dict:
+        return os.path.join(model_dir, model_dict[model]["name"])
+    return model
+
+
+def kraken_binarise_img(img_path: str):
+    venv_command_wrapper(command="kraken", arguments=[
+        "-i", img_path, img_path, "binarize"], venv_path=venv_kraken_path)
+    return
+
+
+def kraken_segment_ocr(img_path: str, out_img_path: str, model: str, output_type: str = "txt", segmentation_mode: str = "bl", seg_model: Union[str, None] = None):
+    kraken_args: list[str] = ["-i", img_path, out_img_path]
+    kraken_args.append(
+        f"--{output_type}") if output_type != "txt" else kraken_args.append("-o txt")
+    segment_args: list[str] = ["segment", f"-{segmentation_mode}"]
+    if seg_model is not None:
+        segment_args.extend(["-i", seg_model])
+    ocr_args: list[str] = ["ocr", "-m", model]
+    all_args: list[str] = kraken_args + segment_args + ocr_args
+    print(all_args)
+    res = venv_command_wrapper(
+        command="kraken", arguments=all_args, venv_path=venv_kraken_path)
+    return res
 
 
 if __name__ == "__main__":

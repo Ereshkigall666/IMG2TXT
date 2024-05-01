@@ -70,3 +70,30 @@ def display_progress(op_code, cur_count, max_count=None, message=''):
     else:
         print(f'{op_code}: {cur_count} - {message}', end='\r')
     return
+
+
+def log_progress(filepath: str, engine: str = "t", stderr: str = ""):
+    os.makedirs(os.path.join(SCRIPT_DIR, "logs"), exist_ok=True)
+    error_log_path: str = os.path.join(SCRIPT_DIR,
+                                       "logs", f"{date.today()}-{ENGINE_DICT[engine]}-error-log.txt")
+    success_log_path: str = os.path.join(SCRIPT_DIR,
+                                         "logs", f"{date.today()}-{ENGINE_DICT[engine]}-log.txt")
+    current_date: datetime = datetime.now()
+    if stderr != "":
+        error_message: str = f"-------------ERROR-------------\n{stderr}"
+        print(error_message)
+        with open(error_log_path, "a") as error_log_file:
+            error_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
+            error_log_file.write(f"file: {filepath}\n")
+            error_log_file.write(f"error message:\n")
+            error_log_file.write(f"{error_message}\n")
+    else:
+        with open(success_log_path, "a") as success_log_file:
+            success_log_file.write(
+                f"date: {current_date.date()}, {current_date.hour}\n")
+            try:
+                success_log_file.write(f"{filepath}\n")
+            except Exception as e:
+                print(e)
+    return

@@ -6,6 +6,8 @@ from pathlib import Path
 # SCRIPT_DIR: Final[str] = os.path.dirname(os.path.realpath(__file__))
 SCRIPT_DIR: Final[str] = Path((__file__)).absolute().parent.parent
 KRAKEN_DATA_DIR: Final[str] = os.path.join(SCRIPT_DIR, "kraken_data")
+TESSERACT_SCRIPT_PATH: Final[str] = os.path.join(
+    SCRIPT_DIR, "src",  "tesseract_ocr.py")
 KRAKEN_OCR_MODELS_DB: Final[str] = os.path.join(
     KRAKEN_DATA_DIR, "ocr_models.json")
 KRAKEN_SEG_MODELS_DB: Final[str] = os.path.join(
