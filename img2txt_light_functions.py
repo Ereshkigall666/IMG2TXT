@@ -206,7 +206,7 @@ def kraken_ocrise_image_file(img_path: str, output_type: str = "txt", force: boo
     # Segmentation and ocr
     print("Segmentation...")
     res = venv_command_wrapper(command="kraken", arguments=[
-                               "-i", img_path, out_img_path, output_type_opt,  "segment", "-bl", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
+                               "-i", img_path, out_img_path, output_type_opt, "segment", "-bl", "ocr", "-m", corpus_model_path], venv_path=venv_kraken_path)
     if res.stderr != "":
         error_message: str = f"-------------ERROR-------------\n{res.stderr}"
         print(error_message)

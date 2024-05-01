@@ -18,13 +18,15 @@ PIP_EXTRA_REPOS: Final[List] = ["https://www.piwheels.org/simple"]
 KRAKEN_GIT_PATH_GENERIC: Final[str] = f"https://github.com/mittagessen/kraken.git"
 # specific commits
 # currently set at 4.3.13.dev25
-KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
+# KRAKEN_COMMIT: Final[str] = "1306fb2653c1bd5a9baf6d518dc3968e5232ca8e"
 # newest: 09/01/2024
 # KRAKEN_COMMIT: Final[str] = "e80308be69041517a97feac903c5c7cf2690227b"
+# 30/04/2024
+KRAKEN_COMMIT: Final[str] = "c621747abf15e5238f70eafdbe63e9827081b82d"
 # KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git@{KRAKEN_COMMIT}"
 KRAKEN_GIT_PATH: Final[str] = f"https://github.com/mittagessen/kraken.git"
 # packages that are version sensitive and seem not to be installed correctly by kraken
-KRAKEN_SENSITIVE_PACKAGES: Final[list] = []
+# KRAKEN_SENSITIVE_PACKAGES: Final[list] = []
 KRAKEN_SENSITIVE_PACKAGES: Final[list] = [
     "scipy==1.10.1", "torch==2.0.0", "scikit-learn==1.1.2"]
 KRAKEN_MODELS: Final[dict[dict]] = {"eng": {"kraken_key": "10.5281/zenodo.2577813", "doi": "2577813", "name": "en_best.mlmodel"},
