@@ -1,0 +1,44 @@
+{
+  "eng": {
+    "kraken_key": "10.5281/zenodo.2577813",
+    "doi": "2577813",
+    "download_token": "None",
+    "name": "en_best.mlmodel",
+    "repo": "zenodo"
+  },
+  "fra-lectaurep": {
+    "kraken_key": "10.5281/zenodo.6542744",
+    "doi": "6542744",
+    "download_token": "None",
+    "name": "lectaurep_base.mlmodel",
+    "repo": "zenodo"
+  },
+  "fra": {
+    "kraken_key": "10.5281/zenodo.6657809",
+    "doi": "6657809",
+    "download_token": "None",
+    "name": "HTR-United-Manu_McFrench.mlmodel",
+    "repo": "zenodo"
+  },
+  "cremma-generic": {
+    "kraken_key": "10.5281/zenodo.7631619",
+    "doi": "7631619",
+    "download_token": "None",
+    "name": "cremma-generic-1.0.1.mlmodel",
+    "repo": "zenodo"
+  },
+  "htr-medieval-lat-fra-expanded": {
+    "kraken_key": "10.5281/zenodo.7516057",
+    "doi": "7516057",
+    "download_token": "None",
+    "name": "frolat_medieval_expan.mlmodel",
+    "repo": "zenodo"
+  },
+  "htr-manicule-beta": {
+    "kraken_key": "None",
+    "doi": "10.34847/nkl.f0e1wk48",
+    "download_token": "d58227455c4af50b754d0ddaeb7528ea8043caaf",
+    "name": "2023-04-29-NP-Manicule_best.mlmodel",
+    "repo": "nakala"
+  }
+}
