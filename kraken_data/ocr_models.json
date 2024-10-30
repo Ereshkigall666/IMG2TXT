@@ -40,5 +40,12 @@
     "download_token": "d58227455c4af50b754d0ddaeb7528ea8043caaf",
     "name": "2023-04-29-NP-Manicule_best.mlmodel",
     "repo": "nakala"
+  },
+  "corpus17": {
+    "kraken_key": "None",
+    "doi": "None",
+    "download_token": "None",
+    "name": "CORPUS17.mlmodel",
+    "repo": "None"
   }
 }
